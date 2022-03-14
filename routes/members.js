@@ -197,11 +197,13 @@ router.get('/', async (req, res) => {
 
 
 
-router.get('/login/:sid', async (req, res)=>{
+router.post('/login', async (req, res)=>{
+    const {email,password}=req.body;
+    const [rs] = await db.query(`SELECT email ,password FROM members WHERE email= ? AND password=? `,[email,password]);
     
-    const [rs] = await db.query(`SELECT email ,password FROM members WHERE email= 'flower@gmail.com' AND password='flower' `);
 
-    res.json(rs);
+
+    res.json(rs.email);
 });
 router.get('/api/list', async (req, res)=>{
     res.json(await getListData(req, res));
