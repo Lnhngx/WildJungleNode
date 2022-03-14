@@ -20,6 +20,10 @@ const corsOptions = {
         //都沒有錯誤，都允許
     }
 };
+
+require('./routes/members');
+
+
 app.use(cors(corsOptions));
 
 app.set('view engine', 'ejs');
@@ -63,13 +67,8 @@ app.get('/', (req, res) => {
 
 
 
-app.get('/members', async (req, res) => {
-    const sql = "SELECT * FROM `members` WHERE 1";
+app.use('/members', require('./routes/members') );
 
-    const [results, fields] = await db.query(sql);
-
-    res.json(results);
-})
 //會員
 app.get('/orders', async (req, res) => {
     const sql = "SELECT * FROM `orders` WHERE 1";
