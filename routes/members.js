@@ -1,6 +1,8 @@
 const express = require('express');
 const db = require('./../modules/connect-db');
 const upload = require('./../modules/upload-imgs');
+const bcrypt=require('bcryptjs');
+const jwt=require('jsonwebtoken');
 
 const router = express.Router();
 
@@ -199,11 +201,30 @@ router.get('/', async (req, res) => {
 
 router.post('/login', async (req, res)=>{
     const {email,password}=req.body;
-    const [rs] = await db.query(`SELECT email ,password FROM members WHERE email= ? AND password=? `,[email,password]);
+    const [rs] = await db.query(`SELECT * FROM members WHERE email= ? AND password=? `,[email,password]);
     
+    // return res.json(req.body);
+    const output = {
+        success: false,
+        error: '',
+        info: null,
+        token: '',
+        code: 0,
+    };
+    if(! rs.length){
+        return res.json('沒有此帳號');
+    }
+  
+    
+    output.success = true;
+    // output.info = {m_sid, email, m_name, grade_sid};
+
+    output.token = jwt.sign({email}, process.env.JWT_KEY);
 
 
-    res.json(rs.email);
+    res.json(output);
+
+   
 });
 router.get('/api/list', async (req, res)=>{
     res.json(await getListData(req, res));
