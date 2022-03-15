@@ -20,6 +20,17 @@ const corsOptions = {
         //都沒有錯誤，都允許
     }
 };
+// 聊天機器人連線
+const server = require("http").createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server,{cors:{}});
+io.on('connection', (socket) => {
+    console.log(`id ${socket.id} is connected`);
+    // 以下程式碼拿來呈現離線用
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
 
 require('./routes/members');
 
@@ -139,3 +150,6 @@ const port = process.env.PORT || 4000;
 app.listen(port, () => {
     console.log(`server started: ${port} -`, new Date());
 })
+server.listen(3001, () => {
+    console.log('listening on *:3001');
+});

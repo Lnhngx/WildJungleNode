@@ -244,7 +244,7 @@ router.post('/login', async (req, res)=>{
 // 註冊
 router.post('/signup', async (req, res)=>{
     const [rs] = await db.query(`INSERT * INTO members WHERE email=?`,[email]);
-}
+});
 // 刪除
 
 router.get('/api/list', async (req, res)=>{
