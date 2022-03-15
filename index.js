@@ -118,7 +118,13 @@ app.get('/tour', async (req, res) => {
     res.json(results);
 })
 //園區導覽
+app.get('/chatbot', async (req, res) => {
+    const sql = "SELECT * FROM `chatbot` WHERE 1";
 
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
 
 
 
