@@ -198,34 +198,55 @@ router.get('/', async (req, res) => {
 })
 
 
-
+// 登入
 router.post('/login', async (req, res)=>{
     const {email,password}=req.body;
-    const [rs] = await db.query(`SELECT * FROM members WHERE email= ? AND password=? `,[email,password]);
-    
-    // return res.json(req.body);
+    const [rs] = await db.query(`SELECT * FROM members WHERE email=?`,[email]);
+    // 有加密密碼，故無法由SQL同時判斷密碼是否符合
+
     const output = {
         success: false,
         error: '',
         info: null,
         token: '',
         code: 0,
+        bodyData: req.body
     };
     if(! rs.length){
-        return res.json('沒有此帳號');
+        output.error='帳密錯誤';
+        output.code=401;
+        return res.json(output);
     }
   
+    const row=rs[0];
+
+    const compareResuly=await bcrypt.compare(password, row.password);
+    if(! compareResuly){
+        output.error='帳密錯誤';
+        output.code=402;
+        return res.json(output);
+    }
     
     output.success = true;
-    // output.info = {m_sid, email, m_name, grade_sid};
-
-    output.token = jwt.sign({email}, process.env.JWT_KEY);
-
+    output.token = jwt.sign({m_sid:row.m_sid, email}, process.env.JWT_KEY);
+    output.account = {
+        m_sid: row.m_sid,
+        email: row.email,
+        m_name: row.m_name,
+    };
 
     res.json(output);
 
    
 });
+
+// 修改
+// 註冊
+router.post('/signup', async (req, res)=>{
+    const [rs] = await db.query(`INSERT * INTO members WHERE email=?`,[email]);
+}
+// 刪除
+
 router.get('/api/list', async (req, res)=>{
     res.json(await getListData(req, res));
 });
