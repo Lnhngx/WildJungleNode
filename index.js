@@ -94,8 +94,8 @@ app.get('/products', async (req, res) => {
     res.json(results);
 })
 //商品
-app.get('/question', async (req, res) => {
-    const sql = "SELECT * FROM `question` WHERE 1";
+app.get('/game', async (req, res) => {
+    const sql = "SELECT `question`.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM `question` JOIN `answer` WHERE `question_sid` = `question`.`sid`";
 
     const [results, fields] = await db.query(sql);
 
