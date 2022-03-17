@@ -197,9 +197,12 @@ router.get('/', async (req, res) => {
     res.json(results);
 })
 
-
+router.get('/login', async (req, res)=>{
+    res.json('login');
+});
 // 登入
 router.post('/login', async (req, res)=>{
+    // return res.json(req.body);
     const {email,password}=req.body;
     const [rs] = await db.query(`SELECT * FROM members WHERE email=?`,[email]);
     // 有加密密碼，故無法由SQL同時判斷密碼是否符合
