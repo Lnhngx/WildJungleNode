@@ -97,6 +97,9 @@ app.get('/animal-touch', async (req, res) => {
     res.json(results);
 })
 //活動
+
+
+//商品
 app.get('/products', async (req, res) => {
     const sql = "SELECT * FROM `products` WHERE 1";
 
@@ -104,7 +107,50 @@ app.get('/products', async (req, res) => {
 
     res.json(results);
 })
-//商品
+//商品的標籤
+app.get('/productslabel', async (req, res) => {
+    const sql = "SELECT * FROM `productslabel` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+//商品圖片
+app.get('/productspic', async (req, res) => {
+    const sql = "SELECT * FROM `productspic` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+//商品評價星星
+app.get('/productsreview', async (req, res) => {
+    const sql = "SELECT * FROM `productsreview` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+//商品規格
+app.get('/productsspec', async (req, res) => {
+    const sql = "SELECT * FROM `productsspec` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+//商品種類（可能用不到）
+app.get('/productstype', async (req, res) => {
+    const sql = "SELECT * FROM `productstype` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+
+
+
+
 app.get('/game', async (req, res) => {
     const sql = "SELECT `question`.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM `question` JOIN `answer` WHERE `question_sid` = `question`.`sid`";
 
