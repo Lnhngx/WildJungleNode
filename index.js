@@ -152,7 +152,7 @@ app.get('/productstype', async (req, res) => {
 
 
 app.get('/game', async (req, res) => {
-    const sql = "SELECT `question`.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM `question` JOIN `answer` WHERE `question_sid` = `question`.`sid`";
+    const sql = "SELECT `question`.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM `question` JOIN `answer` WHERE `question_sid` = `question`.`sid` LIMIT 40";
 
     const [results, fields] = await db.query(sql);
 
