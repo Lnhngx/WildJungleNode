@@ -3,6 +3,7 @@ const db = require('./../modules/connect-db');
 const upload = require('./../modules/upload-imgs');
 const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
@@ -272,11 +273,34 @@ router.post('/signup', upload.none(),async (req, res)=>{
             console.log('error:',error)
             output.error='此帳號已被註冊'
         }
-    
+    // 可成功註冊就寄信給用戶
+    if(output.success){
+        let testAccount = await nodemailer.createTestAccount();
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+            user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+            pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+            },
+        });
+        let info = await transporter.sendMail({
+            from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+            to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
+            subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
+            text: `Hello ${req.body.name}! 您已成功加入會員，前往登入`, // 預計會顯示的文字
+            html: `<h3>Hello ${req.body.name}! 您已成功加入會員，<a href="http://localhost:3000/members/login">前往登入</a></h3>`, // html body 實際顯示出來的結果
+        });
+        
+        console.log("Message sent: %s", info.messageId);
+        
+    }
     
     res.json(output);
 
 });
+
 // 刪除
 
 router.get('/api/list', async (req, res)=>{
