@@ -150,13 +150,21 @@ app.get('/productstype', async (req, res) => {
 
 
 
-
+// 遊戲
 app.get('/game', async (req, res) => {
-    const sql = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
+    const sql1 = "SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10";
+    const [rs1] = await db.query(sql1);
 
-    const [results] = await db.query(sql);
+    const q_ids = rs1.map(r=>r.sid);
 
-    res.json(results);
+    const sql2 =   `SELECT * FROM  \`answer\` WHERE question_sid IN (${q_ids.join(',')}) `; // question_sid
+    const [rs2] = await db.query(sql2);
+
+    // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
+
+    // const [results] = await db.query(sql);
+
+    res.json({rs1, rs2});
 });
 app.post('/game-points', async (req, res) => {
     const sql = "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
@@ -169,6 +177,49 @@ app.post('/game-points', async (req, res) => {
     ])
     res.json('success')
 })
+app.post('/chatbot', async (req, res) => {
+    let output = {
+        success: false,
+        results:{respond:'抱歉，我聽不懂你在說什麼?'}
+    }
+    const message = req.body.request;
+    let sql = '';
+    console.log(message) //檢查用，正式時可刪除
+    if(message.indexOf('你好')!==-1 || message.indexOf('午安')!==-1 || message.indexOf('早安')!==-1 || message.indexOf('晚安')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%你好%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    if(message.indexOf('地址')!==-1){
+        sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%地址%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    if(message.indexOf('票價')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%票價%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    if(message.indexOf('紅利')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%紅利%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    if(message.indexOf('點數')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%點數%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    // const sql = `SELECT * FROM chatbot WHERE 1`;  //檢查用，正式時可刪除
+    
+    
+    res.json(output);
+});
 //遊戲
 app.get('/roomdetail', async (req, res) => {
     const sql = "SELECT * FROM `roomdetail` WHERE 1";
