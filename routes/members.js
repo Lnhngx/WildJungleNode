@@ -190,11 +190,11 @@ async function getorderData(req, res){
 }
 
 router.get('/', async (req, res) => {
-    const sql = "SELECT * FROM `members` WHERE 1";
+    // const sql = "SELECT * FROM `members` WHERE 1";
 
-    const [results, fields] = await db.query(sql);
-
-    res.json(results);
+    // const [results, fields] = await db.query(sql);
+    getorderData();
+    // res.json(results);
 })
 
 router.get('/login', async (req, res)=>{
@@ -244,24 +244,50 @@ router.post('/login', async (req, res)=>{
 });
 
 // 修改
-// 註冊 // application/x-www-form-urlencoded  // application/json
-router.post('/signup', async (req, res)=>{
+// 註冊
+router.post('/signup', upload.none(),async (req, res)=>{
+    // return res.json(req.body)
     const output={
             success:false,
             error:''
         };
+    const sqlEmail="SELECT email FROM members"
+    const resultEmail=await db.query(sqlEmail)
+    // console.log(req.body.email)
+ 
+        // console.log({...resultEmail})
+        // let emailObj={...resultEmail}
+        // console.log(emailObj[0].length)
+        // emailObj[0].map((v,i)=>{
+        //     // console.log(v['email'],i)
+        //     if(req.body.email==v['email']){
+        //         console.log('已有此帳號')
+        //     }
+        // })
+        // if(req.body.email===i){
+        //     output.error='已有此帳號'
+        // }
+        
+        
+        try{
+            const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUES (?,?,?,?,?)";
+            // console.log('result:',result);
+            // output.success=!!result.affectedRows;
+            const [result]=await db.query(sql,[
+                req.body.email,
+                req.body.name,
+                req.body.gender,
+                req.body.birthday || '',
+                req.body.password,
+            ]);
 
-    const sql = await db.query("INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUS (?,?,?,?,?)");
-    const [result]=await db.query(sql,[
-        req.body.email,
-        req.body.name,
-        req.body.gender,
-        req.body.birthday || null,
-        req.body.password,
-    ]);
-    console.log(result);
-    output.success=!!result.affectedRows;
-    output.result=result;
+        }catch(error){
+            console.log('error:',error)
+            output.error='已有此帳號'
+        }
+    
+    
+    // output.result=result;
     res.json(output);
 
 });
