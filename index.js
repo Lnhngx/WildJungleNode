@@ -157,14 +157,62 @@ app.get('/game', async (req, res) => {
 
     const q_ids = rs1.map(r=>r.sid);
 
-    const sql2 =   `SELECT * FROM  \`answer\` WHERE question_sid IN (${q_ids.join(',')}) `; // question_sid
+    const sql2 =  `SELECT * FROM  \`answer\` WHERE question_sid IN (${q_ids.join(',')}) `; // question_sid
     const [rs2] = await db.query(sql2);
-
+    let new_arr = {answer0:[],answer1:[],answer2:[],answer3:[],answer4:[],answer5:[],answer6:[],answer7:[],answer8:[],answer9:[]};
+    rs2.map((v,i)=>{
+        if(v.question_sid===q_ids[0]&&v.yesno==='right'){
+            new_arr.answer0.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[1]&&v.yesno==='right'){
+            new_arr.answer1.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[2]&&v.yesno==='right'){
+            new_arr.answer2.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[3]&&v.yesno==='right'){
+            new_arr.answer3.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[4]&&v.yesno==='right'){
+            new_arr.answer4.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[5]&&v.yesno==='right'){
+            new_arr.answer5.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[6]&&v.yesno==='right'){
+            new_arr.answer6.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[7]&&v.yesno==='right'){
+            new_arr.answer7.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[8]&&v.yesno==='right'){
+            new_arr.answer8.push({right:v.acontent,question_sid:v.question_sid})
+        }else if(v.question_sid===q_ids[9]&&v.yesno==='right'){
+            new_arr.answer9.push({right:v.acontent,question_sid:v.question_sid})
+        }
+        if(v.question_sid===q_ids[0]){
+            new_arr.answer0.push(v.acontent)
+        }else if(v.question_sid===q_ids[1]){
+            new_arr.answer1.push(v.acontent)
+        }else if(v.question_sid===q_ids[2]){
+            new_arr.answer2.push(v.acontent)
+        }else if(v.question_sid===q_ids[3]){
+            new_arr.answer3.push(v.acontent)
+        }else if(v.question_sid===q_ids[4]){
+            new_arr.answer4.push(v.acontent)
+        }else if(v.question_sid===q_ids[5]){
+            new_arr.answer5.push(v.acontent)
+        }else if(v.question_sid===q_ids[6]){
+            new_arr.answer6.push(v.acontent)
+        }else if(v.question_sid===q_ids[7]){
+            new_arr.answer7.push(v.acontent)
+        }else if(v.question_sid===q_ids[8]){
+            new_arr.answer8.push(v.acontent)
+        }else if(v.question_sid===q_ids[9]){
+            new_arr.answer9.push(v.acontent)
+        }
+        
+    })
+    console.log(new_arr)
+    // new_arr.map((v,i)=>{
+    //     console.log(v.question_sid)
+    // })
+    // res.json({rs1,rs2});
+    res.json(new_arr);
     // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
-
     // const [results] = await db.query(sql);
-
-    res.json({rs1, rs2});
 });
 app.post('/game-points', async (req, res) => {
     const sql = "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
