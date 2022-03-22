@@ -154,9 +154,20 @@ app.get('/productstype', async (req, res) => {
 app.get('/game', async (req, res) => {
     const sql = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
 
-    const [results, fields] = await db.query(sql);
+    const [results] = await db.query(sql);
 
     res.json(results);
+});
+app.post('/game-points', async (req, res) => {
+    const sql = "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
+    const [result,fields]=await db.query(sql,[
+        req.body.point_id || '',
+        req.body.getTime_start,
+        req.body.getTime_end,
+        req.body.bonus_status,
+        req.body.m_id,
+    ])
+    res.json('success')
 })
 //遊戲
 app.get('/roomdetail', async (req, res) => {
