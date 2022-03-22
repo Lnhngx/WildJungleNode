@@ -262,17 +262,16 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 req.body.name,
                 req.body.gender,
                 req.body.birthday || '',
-                req.body.password,
+                bcrypt.hashSync(req.body.password),
             ]);
-
-            console.log('result:',result);
+            // console.log('result:',result);
             output.success=!!result.affectedRows;
             output.result=result;
+            
         }catch(error){
             console.log('error:',error)
-            output.error='已有此帳號'
+            output.error='此帳號已被註冊'
         }
-    
     
     
     res.json(output);
