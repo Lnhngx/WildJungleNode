@@ -190,6 +190,25 @@ async function getorderData(req, res){
     return output.rows;
 }
 
+async function getsidData(req,res){
+    const output={
+        success:false,
+        error:''
+    }
+    const sid=req.params.sid;
+    const sql=`SELECT * FROM members WHERE m_sid=${sid}`
+    const [rs]=await db.query(sql)
+    if(!rs.length){
+        console.log(rs)
+        output.error='沒有此筆資料'
+    }
+    output.success=true
+    output.info=rs[0]
+
+    res.json(output)
+
+}
+
 router.get('/', async (req, res) => {
     // const sql = "SELECT * FROM `members` WHERE 1";
 
@@ -253,8 +272,6 @@ router.post('/signup', upload.none(),async (req, res)=>{
             error:''
         };
 
-        
-        
         try{
             const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUES (?,?,?,?,?)";
             
@@ -265,10 +282,10 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 req.body.birthday || '',
                 bcrypt.hashSync(req.body.password),
             ]);
-            // console.log('result:',result);
+            console.log('result:',result);
             output.success=!!result.affectedRows;
             output.result=result;
-            
+            console.log('result:',result.insertId);
         }catch(error){
             console.log('error:',error)
             output.error='此帳號已被註冊'
@@ -309,6 +326,12 @@ router.get('/api/list', async (req, res)=>{
 router.get('/api/orders', async (req, res)=>{
     res.json(await getorderData(req, res));
 });
+
+// 取得對應sid的會員資料
+router.get('/edit/:sid', async (req, res)=>{
+    res.json(await getsidData(req, res));
+});
+
 
 // router.get('/add', async (req, res)=>{
 //     res.render('address-book/add');
