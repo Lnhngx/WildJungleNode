@@ -159,58 +159,108 @@ app.get('/game', async (req, res) => {
 
     const sql2 =  `SELECT * FROM  \`answer\` WHERE question_sid IN (${q_ids.join(',')}) `; // question_sid
     const [rs2] = await db.query(sql2);
-    let new_arr = {answer0:[],answer1:[],answer2:[],answer3:[],answer4:[],answer5:[],answer6:[],answer7:[],answer8:[],answer9:[]};
+    let new_arr = {answer0:{list:[],},answer1:{list:[],},answer2:{list:[],},answer3:{list:[],},answer4:{list:[],},answer5:{list:[],},answer6:{list:[],},answer7:{list:[],},answer8:{list:[],},answer9:{list:[],}};
     rs2.map((v,i)=>{
         if(v.question_sid===q_ids[0]&&v.yesno==='right'){
-            new_arr.answer0.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer0.yes = v.acontent
+            new_arr.answer0.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[1]&&v.yesno==='right'){
-            new_arr.answer1.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer1.yes = v.acontent
+            new_arr.answer1.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[2]&&v.yesno==='right'){
-            new_arr.answer2.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer2.yes = v.acontent
+            new_arr.answer2.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[3]&&v.yesno==='right'){
-            new_arr.answer3.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer3.yes = v.acontent
+            new_arr.answer3.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[4]&&v.yesno==='right'){
-            new_arr.answer4.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer4.yes = v.acontent
+            new_arr.answer4.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[5]&&v.yesno==='right'){
-            new_arr.answer5.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer5.yes = v.acontent
+            new_arr.answer5.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[6]&&v.yesno==='right'){
-            new_arr.answer6.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer6.yes = v.acontent
+            new_arr.answer6.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[7]&&v.yesno==='right'){
-            new_arr.answer7.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer7.yes = v.acontent
+            new_arr.answer7.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[8]&&v.yesno==='right'){
-            new_arr.answer8.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer8.yes = v.acontent
+            new_arr.answer8.question_sid = v.question_sid
         }else if(v.question_sid===q_ids[9]&&v.yesno==='right'){
-            new_arr.answer9.push({right:v.acontent,question_sid:v.question_sid})
+            new_arr.answer9.yes = v.acontent
+            new_arr.answer9.question_sid = v.question_sid
         }
         if(v.question_sid===q_ids[0]){
-            new_arr.answer0.push(v.acontent)
+            new_arr.answer0.list.push(v.acontent)
         }else if(v.question_sid===q_ids[1]){
-            new_arr.answer1.push(v.acontent)
+            new_arr.answer1.list.push(v.acontent)
         }else if(v.question_sid===q_ids[2]){
-            new_arr.answer2.push(v.acontent)
+            new_arr.answer2.list.push(v.acontent)
         }else if(v.question_sid===q_ids[3]){
-            new_arr.answer3.push(v.acontent)
+            new_arr.answer3.list.push(v.acontent)
         }else if(v.question_sid===q_ids[4]){
-            new_arr.answer4.push(v.acontent)
+            new_arr.answer4.list.push(v.acontent)
         }else if(v.question_sid===q_ids[5]){
-            new_arr.answer5.push(v.acontent)
+            new_arr.answer5.list.push(v.acontent)
         }else if(v.question_sid===q_ids[6]){
-            new_arr.answer6.push(v.acontent)
+            new_arr.answer6.list.push(v.acontent)
         }else if(v.question_sid===q_ids[7]){
-            new_arr.answer7.push(v.acontent)
+            new_arr.answer7.list.push(v.acontent)
         }else if(v.question_sid===q_ids[8]){
-            new_arr.answer8.push(v.acontent)
+            new_arr.answer8.list.push(v.acontent)
         }else if(v.question_sid===q_ids[9]){
-            new_arr.answer9.push(v.acontent)
+            new_arr.answer9.list.push(v.acontent)
         }
-        
     })
-    console.log(new_arr)
-    // new_arr.map((v,i)=>{
-    //     console.log(v.question_sid)
-    // })
-    // res.json({rs1,rs2});
-    res.json(new_arr);
+    console.log(new_arr);
+    
+    for(let i=0;i<10;i++){
+        for(let j=0;j<10;j++){
+            if(new_arr.answer0.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer0.list
+                rs1[j].yes = new_arr.answer0.yes
+            }
+            if(new_arr.answer1.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer1.list
+                rs1[j].yes = new_arr.answer1.yes
+            }
+            if(new_arr.answer2.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer2.list
+                rs1[j].yes = new_arr.answer2.yes
+            }
+            if(new_arr.answer3.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer3.list
+                rs1[j].yes = new_arr.answer3.yes
+            }
+            if(new_arr.answer4.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer4.list
+                rs1[j].yes = new_arr.answer4.yes
+            }
+            if(new_arr.answer5.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer5.list
+                rs1[j].yes = new_arr.answer5.yes
+            }
+            if(new_arr.answer6.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer6.list
+                rs1[j].yes = new_arr.answer6.yes
+            }
+            if(new_arr.answer7.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer7.list
+                rs1[j].yes = new_arr.answer7.yes
+            }
+            if(new_arr.answer8.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer8.list
+                rs1[j].yes = new_arr.answer8.yes
+            }
+            if(new_arr.answer9.question_sid===rs1[j].sid){
+                rs1[j].answers =new_arr.answer9.list
+                rs1[j].yes = new_arr.answer9.yes
+            }
+        }
+    }
+    res.json(rs1);
     // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
     // const [results] = await db.query(sql);
 });
