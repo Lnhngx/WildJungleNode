@@ -286,29 +286,33 @@ router.post('/edit/:sid', async (req, res)=>{
     // }
     // return res.json(req.body)
     // UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=? WHERE m_sid=9
-    if(password.trim()==""){
-        const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
+    // if(password.trim()==""){
+    //     const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
 
-        if(rs.changedRows!==0){
-            output.success=true;
-            output.status=401;
-            return res.json(output)
-        }else{
-            output.error='沒有變更'
-            output.status=402;
-            return res.json(output)
-        }
+    //     if(rs.changedRows!==0){
+    //         output.success=true;
+    //         output.status=401;
+    //         return res.json(output)
+    //     }else{
+    //         output.error='沒有變更'
+    //         output.status=402;
+    //         return res.json(output)
+    //     }
 
-    }else{
+    // }else{
 
         const selectPass=`SELECT password FROM members WHERE email=${email}`
         const [rs1]=await db.query(selectPass)
         // console.log(rs1[0].password)
         // console.log(password)
         // console.log(bcrypt.compareSync(password,rs1[0].password))
-        let passTrue=bcrypt.compareSync(password,rs1[0].password)
-        const newPass=await bcrypt.hashSync(password)
+        // let passTrue=bcrypt.compareSync(password,rs1[0].password)
+        let passTrue=rs1[0].password==password
+        console.log(passTrue)
+        
+        // 123 // $2a$10$Q.fowhRap1jLZwx.MyC9bun0JlhDBYpFRi0TmNnOGKBZVlY2vffCK
         if(!passTrue){
+            let newPass=bcrypt.hashSync(password)
             const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,newPass,birthday,address])
             // return res.json(rs)
             if(rs.changedRows!==0){
@@ -321,9 +325,10 @@ router.post('/edit/:sid', async (req, res)=>{
                 return res.json(output)
             }
         }else{
-            const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
+            
+            const [rs3]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
 
-            if(rs.changedRows!==0){
+            if(rs3.changedRows!==0){
                 output.success=true;
                 output.status=301;
                 return res.json(output)
@@ -334,7 +339,7 @@ router.post('/edit/:sid', async (req, res)=>{
             }
         }
         
-    }
+    // }
     
 
     // res.json(rs)
