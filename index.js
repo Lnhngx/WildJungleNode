@@ -26,11 +26,27 @@ const { Server } = require("socket.io");
 const io = new Server(server,{cors:{}});
 io.on('connection', (socket) => {
     console.log(`id ${socket.id} is connected`);
+    let currentRoom = '';
+    socket.on('join',(room,cb)=>{
+        currentRoom = room;
+        socket.join(room);
+        cb(`你已進入${room}`);
+    });
+    socket.on('room message', (msg) => {
+        socket.to(currentRoom).emit('room message',`${msg}`)
+    });
     // 以下程式碼拿來呈現離線用
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
 });
+
+
+
+
+
+
+
 
 require('./routes/members');
 
@@ -214,7 +230,7 @@ app.get('/game', async (req, res) => {
             new_arr.answer9.list.push(v.acontent)
         }
     })
-    console.log(new_arr);
+    // console.log(new_arr);
     
     for(let i=0;i<10;i++){
         for(let j=0;j<10;j++){
