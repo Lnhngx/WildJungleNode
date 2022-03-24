@@ -270,28 +270,75 @@ router.get('/edit/:sid', async (req, res)=>{
 });
 // 修改
 router.post('/edit/:sid', async (req, res)=>{
+    // return res.json(req.body)
     const output={
         success:false,
         error:''
     }
-    const {name,gender,password,birthday,address}=req.body
+    let {name,gender,password,birthday,address}=req.body
     const email=JSON.stringify(req.body.email)
-    let passwordText=',password=?'
-    if(password.trim()===''){
-        passwordText=''
-    }
-    const sql=`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? ${passwordText} WHERE email=${email}`
+    // let passwordText=',password=?'
+    // if(password.trim()===''){
+    //     passwordText=''
+    // }else{
+    //     password=await bcrypt.hashSync(password)
+    //     console.log(password)
+    // }
+    // return res.json(req.body)
     // UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=? WHERE m_sid=9
+    if(password.trim()==""){
+        const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
 
-    const [rs]=await db.query(sql,[name,gender,birthday,address,password])
-    if(rs.changedRows){
-        output.success=true;
+        if(rs.changedRows!==0){
+            output.success=true;
+            output.status=401;
+            return res.json(output)
+        }else{
+            output.error='沒有變更'
+            output.status=402;
+            return res.json(output)
+        }
+
     }else{
-        output.error='沒有變更'
+
+        const selectPass=`SELECT password FROM members WHERE email=${email}`
+        const [rs1]=await db.query(selectPass)
+        // console.log(rs1[0].password)
+        // console.log(password)
+        // console.log(bcrypt.compareSync(password,rs1[0].password))
+        let passTrue=bcrypt.compareSync(password,rs1[0].password)
+        const newPass=await bcrypt.hashSync(password)
+        if(!passTrue){
+            const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,newPass,birthday,address])
+            // return res.json(rs)
+            if(rs.changedRows!==0){
+                output.success=true;
+                output.status=500;
+                return res.json(output)
+            }else{
+                output.error='沒有變更'
+                output.status=501;
+                return res.json(output)
+            }
+        }else{
+            const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
+
+            if(rs.changedRows!==0){
+                output.success=true;
+                output.status=301;
+                return res.json(output)
+            }else{
+                output.error='沒有變更'
+                output.status=302;
+                return res.json(output)
+            }
+        }
+        
     }
+    
 
     // res.json(rs)
-    res.json(output)
+    // res.json(output)
 });
 // 註冊
 router.post('/signup', upload.none(),async (req, res)=>{
