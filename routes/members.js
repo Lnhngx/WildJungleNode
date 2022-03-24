@@ -196,7 +196,8 @@ async function getsidData(req,res){
         error:''
     }
     const sid=req.params.sid;
-    const sql=`SELECT * FROM members WHERE m_sid=${sid}`
+    // SELECT `m_sid`,`email`,`m_name`,`gender`,`password`,`birthday`,`m_address` FROM `members` WHERE 1
+    const sql=`SELECT m_sid,email,m_name,gender,password,birthday,m_address FROM members WHERE m_sid=${sid}`
     const [rs]=await db.query(sql)
     if(!rs.length){
         console.log(rs)
@@ -263,7 +264,35 @@ router.post('/login', async (req, res)=>{
    
 });
 
+// 取得對應sid的會員資料
+router.get('/edit/:sid', async (req, res)=>{
+    res.json(await getsidData(req, res));
+});
 // 修改
+router.post('/edit/:sid', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }
+    const {name,gender,password,birthday,address}=req.body
+    const email=JSON.stringify(req.body.email)
+    let passwordText=',password=?'
+    if(password.trim()===''){
+        passwordText=''
+    }
+    const sql=`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? ${passwordText} WHERE email=${email}`
+    // UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=? WHERE m_sid=9
+
+    const [rs]=await db.query(sql,[name,gender,birthday,address,password])
+    if(rs.changedRows){
+        output.success=true;
+    }else{
+        output.error='沒有變更'
+    }
+
+    // res.json(rs)
+    res.json(output)
+});
 // 註冊
 router.post('/signup', upload.none(),async (req, res)=>{
     // return res.json(req.body)
@@ -327,9 +356,11 @@ router.get('/api/orders', async (req, res)=>{
     res.json(await getorderData(req, res));
 });
 
-// 取得對應sid的會員資料
-router.get('/edit/:sid', async (req, res)=>{
-    res.json(await getsidData(req, res));
+
+router.get('/grade/list', async (req, res)=>{
+    const sql="SELECT * FROM grade"
+    const [rs]=await db.query(sql);
+    res.json(rs)
 });
 
 
