@@ -193,8 +193,8 @@ async function getsidData(req,res){
     const sql=`SELECT m_sid,email,m_name,gender,password,birthday,m_address FROM members WHERE m_sid=${sid}`
     const [rs]=await db.query(sql)
     if(!rs.length){
-        console.log(rs)
-        output.error='沒有此筆資料'
+        console.log(rs);
+        output.error='沒有此筆資料';
     }
     output.success=true
     output.info=rs[0]
@@ -281,9 +281,6 @@ router.post('/edit/:sid', async (req, res)=>{
     // {m_sid:row.m_sid, email}
     if(res.locals.auth && res.locals.auth.email){
         return res.json({success:true, error:res.locals.auth.email})
-    //     return res.json({...await getListData(req, res), 
-    //     account: res.locals.auth.account
-    // }); // 正常送出資料
     } else {
        return res.json({success: false, error: '沒有授權'});
     }
@@ -446,6 +443,7 @@ router.get('/grade/list', async (req, res)=>{
     const [rs]=await db.query(sql);
     res.json(rs)
 });
+
 
 
 // router.get('/add', async (req, res)=>{

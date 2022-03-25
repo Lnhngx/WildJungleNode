@@ -13,6 +13,7 @@ const fs = require('fs').promises;
 const db = require('./modules/connect-db');
 const sessionStore = new MysqlStore({}, db);
 const app = express();
+const jwt = require('jsonwebtoken');
 const corsOptions = {
     credentials: true,
     origin: function (origin, cb) {
@@ -91,7 +92,9 @@ app.use((req, res, next) => {
         try{
             const payload = jwt.verify(auth, process.env.JWT_KEY);
             res.locals.auth = payload;
-        } catch(ex){}
+        } catch(ex){
+            console.log(ex);
+        }
     }
 
 
