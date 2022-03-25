@@ -199,7 +199,7 @@ async function getsidData(req,res){
     output.success=true
     output.info=rs[0]
 
-    res.json(output)
+    return output;
 }
 
 
@@ -273,11 +273,22 @@ router.get('/edit/:sid', async (req, res)=>{
 });
 // 修改
 router.post('/edit/:sid', async (req, res)=>{
-    // return res.json(req.body)
     const output={
         success:false,
         error:''
     }
+    console.log(res.locals.auth);
+    // {m_sid:row.m_sid, email}
+    if(res.locals.auth && res.locals.auth.email){
+        return res.json({success:true, error:res.locals.auth.email})
+    //     return res.json({...await getListData(req, res), 
+    //     account: res.locals.auth.account
+    // }); // 正常送出資料
+    } else {
+       return res.json({success: false, error: '沒有授權'});
+    }
+    // return res.json(req.body)
+    
     let {name,gender,password,birthday,address}=req.body
     const email=JSON.stringify(req.body.email)
 
@@ -287,7 +298,7 @@ router.post('/edit/:sid', async (req, res)=>{
     // console.log(selectPass)
     // console.log(rs1[0])
     
-    if(password.trim()==""){
+    if(password===""){
         // 用戶送來的如果沒有值，就代入資料庫原先的密碼
         password=rs1[0].password;
 

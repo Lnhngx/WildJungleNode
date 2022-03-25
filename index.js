@@ -85,15 +85,13 @@ app.use((req, res, next) => {
 
     // JWT
     res.locals.auth=null;
-    let auth=req.get('Authorization');
+    let auth = req.get('Authorization');
     if(auth && auth.indexOf('Bearer ')===0){
-        auth=auth.slice(7);
+        auth = auth.slice(7);
         try{
-            const payload=jwt.verify(auth,process.env.JWT_KEY);
-            res.locals.auth=payload;
-        }catch(ex){
-
-        }
+            const payload = jwt.verify(auth, process.env.JWT_KEY);
+            res.locals.auth = payload;
+        } catch(ex){}
     }
 
 
