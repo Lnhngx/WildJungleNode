@@ -83,6 +83,20 @@ app.use((req, res, next) => {
     res.locals.toDateString = date => moment(date).format('YYYY-MM-DD');
     res.locals.toDatetimeString = date => moment(date).format('YYYY-MM-DD HH:mm:ss');
 
+    // JWT
+    res.locals.auth=null;
+    let auth=req.get('Authorization');
+    if(auth && auth.indexOf('Bearer ')===0){
+        auth=auth.slice(7);
+        try{
+            const payload=jwt.verify(auth,process.env.JWT_KEY);
+            res.locals.auth=payload;
+        }catch(ex){
+
+        }
+    }
+
+
     next();
 })
 
