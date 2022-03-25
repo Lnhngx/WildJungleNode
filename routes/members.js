@@ -275,12 +275,13 @@ router.get('/edit/:sid', async (req, res)=>{
 router.post('/edit/:sid', async (req, res)=>{
     const output={
         success:false,
-        error:''
+        error:'',
+        info:''
     }
     console.log(res.locals.auth);
     // {m_sid:row.m_sid, email}
     if(res.locals.auth && res.locals.auth.email){
-        return res.json({success:true, error:res.locals.auth.email})
+        return res.json({success:true, info:res.locals.auth.email})
     } else {
        return res.json({success: false, error: '沒有授權'});
     }
