@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
         cb(`你已進入${room}`);
     });
     socket.on('room message', (msg) => {
-        socket.to(currentRoom).emit('room message',`${msg}`)
+        socket.to(currentRoom).emit('room message',msg)
     });
     // 以下程式碼拿來呈現離線用
     socket.on('disconnect', () => {
