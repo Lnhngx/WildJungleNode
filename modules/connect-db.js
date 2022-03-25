@@ -10,6 +10,7 @@ const pool = mysql.createPool({
     waitForConnections:true,
     connectionLimit:5, //最大連線數
     queueLimit:0, //排隊限制
+    dateStrings:true,
 });
 
 module.exports = pool.promise();
