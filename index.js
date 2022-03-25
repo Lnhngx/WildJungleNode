@@ -76,6 +76,8 @@ app.use(session({
     }//存活時間 單位是毫秒（20分鐘）
 }));
 
+app.use('/roomplatform',require('./routes/roomplatform'));
+
 
 //自訂的middleware
 app.use((req, res, next) => {
@@ -352,6 +354,14 @@ app.post('/chatbot', async (req, res) => {
 //遊戲
 app.get('/roomdetail', async (req, res) => {
     const sql = "SELECT * FROM `roomdetail` WHERE 1";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
+//住宿
+app.get('/roomplatform', async (req, res) => {
+    const sql = "SELECT roomplatform.sid , roomplatform.service_score , roomplatform.clean_score , roomplatform.comfort_score , roomplatform.facility_score , roomplatform.cpValue_score, roomplatform.comments , members.m_name , orders_details_live.start  , orders_details_live.end, roomdetail.room_name FROM roomplatform JOIN members on roomplatform.m_sid = members.m_sid JOIN orders_details_live on roomplatform.order_detail_live_sid = orders_details_live.sid JOIN roomdetail on orders_details_live.room_sid = roomdetail.sid";
 
     const [results, fields] = await db.query(sql);
 
