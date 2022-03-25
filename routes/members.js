@@ -65,130 +65,123 @@ async function getListData(req, res){
 
     return output.rows;
 }
-async function getorderData(req, res){
+// async function getorderData(req, res){
+
+//     // 輸出
+//     const output = {
+//         // success: false,
+//         // perPage,
+//         // page,
+//         // totalRows: 0,
+//         // totalPages: 0,
+//         rows: [],
+//         // conditions
+//     };
+//     // return res.json('123');
+//     // let sqlWhere = ' WHERE 1 ';
+//     // const t_sql = `SELECT COUNT(1) num FROM members ${sqlWhere} `;
+//     // // return res.send(t_sql); // 除錯用
+//     // const [rs1] = await db.query(t_sql);
+//     // const totalRows = rs1[0].num;
+
+
+//     const sql ="SELECT m.`m_sid`,m.`email`,o.`amount`,o.`order_sid`,o.`order_date`,tp.`room_sid`,tp.`start`,tp.`end` FROM `members` m JOIN `orders` o ON m.`m_sid`=o.`users_sid` JOIN `orders_details_live` tp ON o.`order_sid`=tp.`orders_sid` ORDER BY m.`m_sid` DESC";
+
+//         /* 
+//         SELECT * FROM `members` m
+//         JOIN `orders` o
+//         ON m.m_sid=o.users_sid
+//         JOIN `order_details_products` tp
+//         ON o.sid=tp.order_sid
+//         ORDER BY m.m_sid DESC
+//         */
     
-    let sqlWhere = ' WHERE 1 ';
+//     const [rs2] = await db.query(sql);
+//     rs2.forEach(el=>{
+//         // let str = res.locals.toDateString(el.birthday);
+//         let str2 = res.locals.toDatetimeString(el.order_date);
+//         if(str2 === 'Invalid date'){
+//             el.order_date = '沒有輸入資料';
+//         } else {
+//             // el.birthday = str;
+//             el.order_date = str2;
+//         }
+//     });
+//     return res.json(rs2)
     
-
-    // 輸出
-    const output = {
-        // success: false,
-        // perPage,
-        // page,
-        // totalRows: 0,
-        // totalPages: 0,
-        rows: [],
-        // conditions
-    };
-
-    const t_sql = `SELECT COUNT(1) num FROM members ${sqlWhere} `;
-    // return res.send(t_sql); // 除錯用
-    const [rs1] = await db.query(t_sql);
-    const totalRows = rs1[0].num;
     
+    
+//     const resultData = [];
 
+//     const dict = {};
+//     for(let i of rs2){
+//         dict[i.o_sid] = i;
+//         // 訂單編號
+//     }
+
+    
+//     let ar1= [];
+//     for(let i of rs2){
+//         const parent = dict[i.order_sid];
+//             if(! parent.list) {
+//                 parent.list = [];
+//             }
+//         // console.log('parent--',parent);
+//         // 每個{}在array的哪個位置
         
-        const sql =`SELECT m.m_sid,m.order_amount,o.*,tp.* FROM \`members\` m
-                        JOIN \`orders\` o
-                        ON m.m_sid=o.users_sid
-                        JOIN \`order_details_products\` tp
-                        ON o.o_sid=tp.order_sid
-                        ORDER BY m.m_sid DESC`;
-        /* 
-        SELECT * FROM `members` m
-        JOIN `orders` o
-        ON m.m_sid=o.users_sid
-        JOIN `order_details_products` tp
-        ON o.sid=tp.order_sid
-        ORDER BY m.m_sid DESC
-        */
-        const [rs2] = await db.query(sql);
+
+//         resultData.push(parent);
+//         console.log(parent);
+//         // let pLength = Object.keys(parent).length;
+//         // console.log('object長度:',pLength);
+//         // console.log('array長度:',rs2.length);
+//         // let p= i.product_sid;
+//         // console.log('p:',p);
         
-        rs2.forEach(el=>{
-            // let str = res.locals.toDateString(el.birthday);
-            let str2 = res.locals.toDatetimeString(el.order_date);
-            if(str2 === 'Invalid date'){
-                el.order_date = '沒有輸入資料';
-            } else {
-                // el.birthday = str;
-                el.order_date = str2;
-            }
-        });
-
-       
+//         // console.log(i["order_sid"]);
+    
         
+//         // if(parent["order_sid"]!=parent["order_sid"]){
+
+//         // }else{
+
+//         // }
         
-        const resultData = [];
-
-        const dict = {};
-        for(let i of rs2){
-            dict[i.o_sid] = i;
-            // 訂單編號
-        }
-
+//         const ps={};
+//         ps["order_sid"]=i.order_sid;
+//         ps["product_sid"]=i.product_sid;
+//         ps["product_price"]=i.product_price;
+//         ps["product_quantity"]=i.product_quantity;
+//         console.log('ps--',ps);
         
-        let ar1= [];
-        for(let i of rs2){
-            const parent = dict[i.order_sid];
-                if(! parent.list) {
-                    parent.list = [];
-                }
-            // console.log('parent--',parent);
-            // 每個{}在array的哪個位置
+
+//         // parent.list.push('7');
+        
+//         if(parent.order_sid==ps.order_sid){
+//             parent.list.push(ps);
+//             // resultData.push(ps);
+//         }
+//         // for(let k of parent)
+
+//         // switch(i.o_sid){
+//         //     case 111:
+//         //         parent.list={'order_sid':i.order_sid,'order_date':i.order_date,'product_sid':i.product_sid};
+//         //         resultData.push(i);
+//         //     break;
             
- 
-            resultData.push(parent);
-            console.log(parent);
-            // let pLength = Object.keys(parent).length;
-            // console.log('object長度:',pLength);
-            // console.log('array長度:',rs2.length);
-            // let p= i.product_sid;
-            // console.log('p:',p);
-            
-            // console.log(i["order_sid"]);
-       
-            
-            // if(parent["order_sid"]!=parent["order_sid"]){
+//         // }
+//     }
+//     // list塞入要的資料
 
-            // }else{
+//     // console.log(resultData);
+//     // output.rows = orderObj;
+//     // output.rows = rs2;
+//     output.rows = resultData;
 
-            // }
-           
-            const ps={};
-            ps["order_sid"]=i.order_sid;
-            ps["product_sid"]=i.product_sid;
-            ps["product_price"]=i.product_price;
-            ps["product_quantity"]=i.product_quantity;
-            console.log('ps--',ps);
-            
+//     // }
 
-            // parent.list.push('7');
-            
-            if(parent.order_sid==ps.order_sid){
-                parent.list.push(ps);
-                // resultData.push(ps);
-            }
-            // for(let k of parent)
-
-            // switch(i.o_sid){
-            //     case 111:
-            //         parent.list={'order_sid':i.order_sid,'order_date':i.order_date,'product_sid':i.product_sid};
-            //         resultData.push(i);
-            //     break;
-                
-            // }
-        }
-        // list塞入要的資料
-
-        // console.log(resultData);
-        // output.rows = orderObj;
-        // output.rows = rs2;
-        output.rows = resultData;
-
-    // }
-
-    return output.rows;
-}
+//     return output.rows;
+// }
 
 async function getsidData(req,res){
     const output={
@@ -207,15 +200,25 @@ async function getsidData(req,res){
     output.info=rs[0]
 
     res.json(output)
-
 }
 
-router.get('/', async (req, res) => {
-    // const sql = "SELECT * FROM `members` WHERE 1";
 
-    // const [results, fields] = await db.query(sql);
-    getorderData();
-    // res.json(results);
+
+// 取得房型訂單資料
+router.get('/api/orders', async (req, res) => {
+    const sql ="SELECT m.`m_sid`,m.`email`,o.`amount`,o.`order_sid`,o.`order_date`,tp.`room_sid`,tp.`start`,tp.`end` FROM `members` m JOIN `orders` o ON m.`m_sid`=o.`users_sid` JOIN `orders_details_live` tp ON o.`order_sid`=tp.`orders_sid` ORDER BY m.`m_sid` DESC";
+    const [rs2] = await db.query(sql);
+    rs2.forEach(el=>{
+        // let str = res.locals.toDateString(el.birthday);
+        let str2 = res.locals.toDatetimeString(el.order_date);
+        if(str2 === 'Invalid date'){
+            el.order_date = '沒有輸入資料';
+        } else {
+            el.order_date = str2;
+        }
+    });
+
+    return res.json(rs2)
 })
 
 router.get('/login', async (req, res)=>{
@@ -350,6 +353,22 @@ router.post('/signup', upload.none(),async (req, res)=>{
             error:''
         };
 
+    const sql2="SELECT email FROM members WHERE 1"
+    const [rs2]=await db.query(sql2)
+    let newAr=[]
+
+    rs2.forEach((el)=>{
+        if(el.email===req.body.email){
+        newAr.push(el)
+        }
+    })
+    
+    // return res.json(newAr[0].email)
+    // return res.json(newAr.length)
+
+    // 沒有相同帳號的話
+    if(!newAr.length){
+
         try{
             const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUES (?,?,?,?,?)";
             
@@ -366,32 +385,37 @@ router.post('/signup', upload.none(),async (req, res)=>{
             console.log('result:',result.insertId);
         }catch(error){
             console.log('error:',error)
-            output.error='此帳號已被註冊'
+            output.error='無法註冊'
         }
-    // 可成功註冊就寄信給用戶
-    if(output.success){
-        let testAccount = await nodemailer.createTestAccount();
-        let transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true, // true for 465, false for other ports
-            auth: {
-            user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
-            pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
-            },
-        });
-        let info = await transporter.sendMail({
-            from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
-            to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
-            subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
-            text: `Hello ${req.body.name}! 您已成功加入會員，前往登入`, // 預計會顯示的文字
-            html: `<h3>Hello ${req.body.name}! 您已成功加入會員，<a href="http://localhost:3000/members/login">前往登入</a></h3>`, // html body 實際顯示出來的結果
-        });
-        
-        console.log("Message sent: %s", info.messageId);
-        
+        // 可成功註冊就寄信給用戶
+        if(output.success){
+            let testAccount = await nodemailer.createTestAccount();
+            let transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true, // true for 465, false for other ports
+                auth: {
+                user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+                pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+                },
+            });
+            let info = await transporter.sendMail({
+                from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+                to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
+                subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
+                text: `Hello ${req.body.name}! 您已成功加入會員，前往登入`, // 預計會顯示的文字
+                html: `<h3>Hello ${req.body.name}! 您已成功加入會員，<a href="http://localhost:3000/members/login">前往登入</a></h3>`, // html body 實際顯示出來的結果
+            });
+            
+            console.log("Message sent: %s", info.messageId);
+            
+        }
+
+    }else{
+        // 有相同帳號的話
+        output.error='已有此帳號'
     }
-    
+
     res.json(output);
 
 });
