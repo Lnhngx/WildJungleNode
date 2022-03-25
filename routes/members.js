@@ -277,71 +277,68 @@ router.post('/edit/:sid', async (req, res)=>{
     }
     let {name,gender,password,birthday,address}=req.body
     const email=JSON.stringify(req.body.email)
-    // let passwordText=',password=?'
-    // if(password.trim()===''){
-    //     passwordText=''
-    // }else{
-    //     password=await bcrypt.hashSync(password)
-    //     console.log(password)
-    // }
-    // return res.json(req.body)
-    // UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=? WHERE m_sid=9
-    // if(password.trim()==""){
-    //     const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
 
-    //     if(rs.changedRows!==0){
-    //         output.success=true;
-    //         output.status=401;
-    //         return res.json(output)
-    //     }else{
-    //         output.error='沒有變更'
-    //         output.status=402;
-    //         return res.json(output)
-    //     }
+    // 取原先資料庫加密過後的密碼
+    const selectPass="SELECT password FROM members WHERE email="+`${email}`
+    const [rs1]=await db.query(selectPass)
+    // console.log(selectPass)
+    // console.log(rs1[0])
+    
+    if(password.trim()==""){
+        // 用戶送來的如果沒有值，就代入資料庫原先的密碼
+        password=rs1[0].password;
 
-    // }else{
+        const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,password,birthday,address])
+        // return res.json(rs)
+        if(rs.changedRows!==0){
+            output.success=true;
+            output.status=500;
+            return res.json(output)
+        }else{
+            output.error='沒有變更'
+            output.status=501;
+            return res.json(output)
+        }
 
-        const selectPass=`SELECT password FROM members WHERE email=${email}`
-        const [rs1]=await db.query(selectPass)
-        // console.log(rs1[0].password)
-        // console.log(password)
-        // console.log(bcrypt.compareSync(password,rs1[0].password))
-        // let passTrue=bcrypt.compareSync(password,rs1[0].password)
-        let passTrue=rs1[0].password==password
-        console.log(passTrue)
-        
-        // 123 // $2a$10$Q.fowhRap1jLZwx.MyC9bun0JlhDBYpFRi0TmNnOGKBZVlY2vffCK
-        if(!passTrue){
-            let newPass=bcrypt.hashSync(password)
-            const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,newPass,birthday,address])
+
+    }else{
+        // 進來有值先比對
+        // return res.json(password)
+        if(bcrypt.compareSync(password,rs1[0].password)){
+            // 密碼相同就不更新密碼
+            // return res.json(password)
+            const [rs2]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,birthday,address])
             // return res.json(rs)
-            if(rs.changedRows!==0){
+            if(rs2.changedRows!==0){
                 output.success=true;
-                output.status=500;
+                output.status=600;
                 return res.json(output)
             }else{
                 output.error='沒有變更'
-                output.status=501;
+                output.status=601;
                 return res.json(output)
             }
-        }else{
-            
-            const [rs3]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=? WHERE email=${email}`,[name,gender,birthday,address]);
 
+            
+        }else{
+            // 比對為不同密碼就加密
+            password=bcrypt.hashSync(password)
+            // return res.json(password)
+            const [rs3]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE email=${email}`,[name,gender,password,birthday,address])
+            // return res.json(rs)
             if(rs3.changedRows!==0){
                 output.success=true;
-                output.status=301;
+                output.status=300;
                 return res.json(output)
             }else{
                 output.error='沒有變更'
-                output.status=302;
+                output.status=301;
                 return res.json(output)
             }
         }
-        
-    // }
-    
 
+    }
+        
     // res.json(rs)
     // res.json(output)
 });
