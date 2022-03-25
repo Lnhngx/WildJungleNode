@@ -282,70 +282,72 @@ router.post('/edit/:sid', async (req, res)=>{
     // 取得前端帶來的token解密
     // {m_sid:row.m_sid, email}
     if(res.locals.auth && res.locals.auth.email){
-        let {name,gender,password,birthday,address}=req.body
-    const email=res.locals.auth.email;
-    const m_sid=res.locals.auth.m_sid;
-
-    // 取原先資料庫加密過後的密碼
-    const selectPass="SELECT password FROM members WHERE m_sid="+`${m_sid}`
-    const [rs1]=await db.query(selectPass);
-    // console.log(selectPass)
-    // console.log(rs1[0])
-    
-    if(password===""){
-        
-        const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,birthday,address])
-        // return res.json(rs)
-        if(rs.changedRows!==0){
-            output.success=true;
-            output.status=500;
-            return res.json(output)
-        }else{
-            output.error='沒有變更'
-            output.status=501;
-            return res.json(output)
-        }
-
-
-    }else{
-        // 進來有值先比對
-        // return res.json(password)
-        if(bcrypt.compareSync(password,rs1[0].password)){
-            // 密碼相同就不更新密碼
-            // return res.json(password)
-            const [rs2]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,birthday,address])
-            // return res.json(rs)
-            if(rs2.changedRows!==0){
-                output.success=true;
-                output.status=600;
-                return res.json(output);
-            }else{
-                output.error='沒有變更'
-                output.status=601;
-                return res.json(output);
-            }
-
-            
-        }else{
-            // 比對為不同密碼就加密
-            password=bcrypt.hashSync(password);
-            // return res.json(password)
-            const [rs3]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,password,birthday,address])
-            // return res.json(rs)
-            if(rs3.changedRows!==0){
-                output.success=true;
-                output.status=300;
-                return res.json(output)
-            }else{
-                output.error='沒有變更'
-                output.status=301;
-                return res.json(output)
-            }
-        }
-
-    }
-
         // return res.json({success:true, info:res.locals.auth.email})
+        let {name,gender,password,birthday,address}=req.body
+        const email=res.locals.auth.email;
+        const m_sid=res.locals.auth.m_sid;
+
+        // 取原先資料庫加密過後的密碼
+        const selectPass="SELECT password FROM members WHERE m_sid="+`${m_sid}`
+        const [rs1]=await db.query(selectPass);
+        // console.log(selectPass)
+        // console.log(rs1[0])
+        
+        if(password===""){
+            // return res.json(birthday)
+            const [rs]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,birthday,address])
+            // return res.json(rs)
+            // return res.json(req.body)
+            if(rs.changedRows!==0){
+                output.success=true;
+                output.status=500;
+                return res.json(rs)
+            }else{
+                output.error='沒有變更'
+                output.status=501;
+                return res.json(rs)
+            }
+
+
+        }else{
+            // 進來有值先比對
+            // return res.json(password)
+            if(bcrypt.compareSync(password,rs1[0].password)){
+                // 密碼相同就不更新密碼
+                // return res.json(password)
+                const [rs2]=await db.query(`UPDATE members SET m_name=?,gender=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,birthday,address])
+                // return res.json(rs)
+                if(rs2.changedRows!==0){
+                    output.success=true;
+                    output.status=600;
+                    return res.json(output);
+                }else{
+                    output.error='沒有變更'
+                    output.status=601;
+                    return res.json(output);
+                }
+
+                
+            }else{
+                // 比對為不同密碼就加密
+                password=bcrypt.hashSync(password);
+                // return res.json(password)
+                const [rs3]=await db.query(`UPDATE members SET m_name=?,gender=?,password=?,birthday=?,m_address=?  WHERE m_sid=${m_sid}`,[name,gender,password,birthday,address])
+                // return res.json(rs)
+                if(rs3.changedRows!==0){
+                    output.success=true;
+                    output.status=300;
+                    return res.json(output)
+                }else{
+                    output.error='沒有變更'
+                    output.status=301;
+                    return res.json(output)
+                }
+            }
+
+        }
+
+        
     } else {
        return res.json({success: false, error: '沒有授權'});
     }
@@ -440,12 +442,42 @@ router.get('/api/orders', async (req, res)=>{
     res.json(await getorderData(req, res));
 });
 
-
+// 取得等級的json檔
 router.get('/grade/list', async (req, res)=>{
     const sql="SELECT * FROM grade"
     const [rs]=await db.query(sql);
     res.json(rs)
 });
+
+// 123456 // $2a$10$9nFkUVAoDtY1CdMo1JbWre/C.v3G0XJp9mkWevOHG8CFmWivHiSCy
+router.get('/creditcard/:sid', async (req, res)=>{
+    const output={
+        success:false,
+        error:'',
+        info:''
+    }
+    // if(res.locals.auth && res.locals.auth.email){
+        const sid=req.params.sid;
+        const sql=`SELECT * FROM credit_card WHERE m_id=${sid}`
+        const [rs]=await db.query(sql);
+
+        rs.map((v,i)=>{
+            const newObj={}
+            v[i].m_id
+        })
+        return res.json(rs);
+
+
+
+
+
+    // }else{
+    //     return res.json({success: false, error: '沒有授權'});
+    
+    // }
+    
+});
+
 
 
 
