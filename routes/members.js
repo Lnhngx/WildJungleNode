@@ -273,6 +273,7 @@ router.get('/edit/:sid', async (req, res)=>{
 });
 // 修改
 router.post('/edit/:sid', async (req, res)=>{
+    // return res.json(req.body)
     const output={
         success:false,
         error:'',
@@ -319,6 +320,7 @@ router.post('/edit/:sid', async (req, res)=>{
                 // return res.json(rs)
                 if(rs2.changedRows!==0){
                     output.success=true;
+                    output.info='提醒! 密碼相同'
                     output.status=600;
                     return res.json(output);
                 }else{
