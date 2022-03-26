@@ -302,11 +302,11 @@ router.post('/edit/:sid', async (req, res)=>{
             if(rs.changedRows!==0){
                 output.success=true;
                 output.status=500;
-                return res.json(rs)
+                return res.json(output)
             }else{
                 output.error='沒有變更'
                 output.status=501;
-                return res.json(rs)
+                return res.json(output)
             }
 
 
@@ -320,7 +320,7 @@ router.post('/edit/:sid', async (req, res)=>{
                 // return res.json(rs)
                 if(rs2.changedRows!==0){
                     output.success=true;
-                    output.info='提醒! 密碼相同'
+                    output.info='提醒! 密碼相同';
                     output.status=600;
                     return res.json(output);
                 }else{
