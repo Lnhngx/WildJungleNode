@@ -164,6 +164,14 @@ app.get('/productsreview', async (req, res) => {
 
     res.json(results);
 })
+
+app.get('/productsmemberreview', async (req, res) => {
+    const sql = "SELECT `m_name` FROM `members` JOIN `productsreview` WHERE `m_sid` = `memberSid`";
+
+    const [results, fields] = await db.query(sql);
+
+    res.json(results);
+})
 //商品規格
 app.get('/productsspec', async (req, res) => {
     const sql = "SELECT * FROM `productsspec` WHERE 1";
