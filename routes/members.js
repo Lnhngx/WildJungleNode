@@ -449,6 +449,7 @@ router.get('/grade/list', async (req, res)=>{
     res.json(rs)
 });
 
+// 取得信用卡資料
 // 123456 // $2a$10$9nFkUVAoDtY1CdMo1JbWre/C.v3G0XJp9mkWevOHG8CFmWivHiSCy
 router.get('/creditcard/:sid', async (req, res)=>{
     const output={
@@ -456,17 +457,86 @@ router.get('/creditcard/:sid', async (req, res)=>{
         error:'',
         info:''
     }
-    // if(res.locals.auth && res.locals.auth.email){
+    if(res.locals.auth && res.locals.auth.email){
         const sid=req.params.sid;
         const sql=`SELECT * FROM credit_card WHERE m_id=${sid}`
         const [rs]=await db.query(sql);
 
+        let newObj={}
         rs.map((v,i)=>{
-            const newObj={}
-            v[i].m_id
+            return newObj.m_sid=v.m_id
         })
-        return res.json(rs);
+        let list=[]
+        rs.map((v,i)=>{
+            list.push({"credit_sid":v.credit_sid,"credit_num":v.credit_num,"credit_date":v.credit_date,"credit_code":v.credit_code})
+        })
+        newObj.list=list
+        return res.json(newObj);
+        // {
+        //     "m_sid": 8,
+        //     "list": [
+        //         {
+        //             "credit_sid": 1,
+        //             "credit_num": "562178451234",
+        //             "credit_date": "0227",
+        //             "credit_code": 756
+        //         },
+        //         {
+        //             "credit_sid": 4,
+        //             "credit_num": "562178451234",
+        //             "credit_date": "1224",
+        //             "credit_code": 756
+        //         }
+        //     ]
+        // }
 
+    }else{
+        return res.json({success: false, error: '沒有授權'});
+    
+    }
+    
+});
+
+// 房間的訂單資料
+router.get('/orders/:sid', async (req, res)=>{
+    const output={
+        success:false,
+        error:'',
+        info:''
+    }
+    // if(res.locals.auth && res.locals.auth.email){
+        const sid=req.params.sid;
+        const sql=`SELECT * FROM orders WHERE m_sid=${sid}`
+        const [rs]=await db.query(sql);
+        // return res.json(rs)
+
+        // "SELECT m.`m_sid`, o.`amount`, o.`order_sid`, o.`order_date`, tl.`room_count`, tl.`start`,tl.`end`, rd.`room_name`, rd.`price`, p.`method` FROM `members` m JOIN `orders` o ON m.`m_sid`=o.`m_sid` JOIN `orders_details_live` tl ON o.`order_sid`=tl.`orders_sid` JOIN `roomdetail` rd ON rd.`sid`=tl.`room_sid` JOIN `payment` p ON p.`payment_sid`=o.`payment_sid` ORDER BY m.`m_sid` DESC"
+        const sql2 =`SELECT m.\`m_sid\`, o.\`amount\`, o.\`order_sid\`, o.\`order_date\`, tl.\`room_count\`, tl.\`start\`,tl.\`end\`, rd.\`room_name\`, rd.\`price\`, p.\`method\` FROM \`members\` m JOIN \`orders\` o ON m.\`m_sid\`=o.\`m_sid\` JOIN \`orders_details_live\` tl ON o.\`order_sid\`=tl.\`orders_sid\` JOIN \`roomdetail\` rd ON rd.\`sid\`=tl.\`room_sid\` JOIN \`payment\` p ON p.\`payment_sid\`=o.\`payment_sid\` WHERE m.\`m_sid\`=${sid} ORDER BY m.\`m_sid\` DESC `;
+        const [rs2] = await db.query(sql2);
+        // [{
+        //         "m_sid": 1,
+        //         "amount": 9000,
+        //         "order_sid": 1,
+        //         "order_date": "2021-10-24",
+        //         "room_count": 2,
+        //         "start": "2021-11-29",
+        //         "end": "2021-12-01",
+        //         "room_name": "冰原3人房型",
+        //         "price": "4500",
+        //         "method": "現金"
+        // }]
+
+        // rs2.forEach(el=>{
+        //     // let str = res.locals.toDateString(el.birthday);
+        //     let str2 = res.locals.toDatetimeString(el.order_date);
+        //     if(str2 === 'Invalid date'){
+        //         el.order_date = '沒有輸入資料';
+        //     } else {
+        //         el.order_date = str2;
+        //     }
+        // });
+
+        return res.json(rs2)
 
 
 
@@ -477,7 +547,6 @@ router.get('/creditcard/:sid', async (req, res)=>{
     // }
     
 });
-
 
 
 
