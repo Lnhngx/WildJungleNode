@@ -435,14 +435,21 @@ router.post('/signup', upload.none(),async (req, res)=>{
 
 });
 
+// 登出
+router.get('/logout', async (req, res)=>{
+
+    if(res.locals.auth && res.locals.auth.m_sid){
+        localStorage.removeItem('admin_account');
+        localStorage.removeItem('admin_token');
+    }else{
+
+    }
+});
+
+
 // 刪除
 
-router.get('/api/list', async (req, res)=>{
-    res.json(await getListData(req, res));
-});
-router.get('/api/orders', async (req, res)=>{
-    res.json(await getorderData(req, res));
-});
+
 
 // 取得等級的json檔
 router.get('/grade/list', async (req, res)=>{
@@ -550,7 +557,54 @@ router.get('/orders/:sid', async (req, res)=>{
     
 });
 
+// 忘記密碼處理
+router.post('/forgotpass', async (req, res)=>{
+    const output={
+        success:false,
+        error:'',
+        info:''
+    }
+    const {email} =req.body;
+    // console.log(typeof(email))
+    // return res.json(req.body.email)
+    const sql=`SELECT email FROM members WHERE 1`;
+    const [rs]=await db.query(sql);
+    const newArr= rs.map((v,i)=>{
+        return v.email
+    })
+    const yesno=newArr.filter((v)=>{
+        return v===email
+    })
+    // console.log(yesno)
+    if(email===''){
+            return res.json(output);
+    }else{
+        if(yesno.length!==0){
+            output.success=true;
+            output.info='好的，已發送mail，請至您的信箱查看';
+            return res.json(output);
+        }else{
+            output.error='此帳號沒有註冊過';
+            return res.json(output);
+        }
+    }
+        
+        
+ 
+    
+    
 
+    // console.log(newArr)
+    return res.json('測試')
+});
+
+
+// router.get('/api/list', async (req, res)=>{
+//     res.json(await getListData(req, res));
+// });
+// router.get('/api/orders', async (req, res)=>{
+//     res.json(await getorderData(req, res));
+// });
 
 // router.get('/add', async (req, res)=>{
 //     res.render('address-book/add');
