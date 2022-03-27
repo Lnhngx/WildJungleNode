@@ -385,7 +385,7 @@ router.post('/signup', upload.none(),async (req, res)=>{
     if(!newAr.length){
 
         try{
-            const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUES (?,?,?,?,?)";
+            const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`,`grade_sid`,`check_code`,`check_email`) VALUES (?,?,?,?,?,?,?,?)";
             
             const [result]=await db.query(sql,[
                 req.body.email,
@@ -393,17 +393,26 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 req.body.gender,
                 req.body.birthday || '',
                 bcrypt.hashSync(req.body.password),
+                1,
+                '',
+                0
             ]);
             console.log('result:',result);
             output.success=!!result.affectedRows;
             output.result=result;
-            console.log('result:',result.insertId);
+            console.log('resultID:',result.insertId);
         }catch(error){
             console.log('error:',error)
             output.error='無法註冊'
         }
         // 可成功註冊就寄信給用戶
         if(output.success){
+            // return res.json(req.body)
+            // 成功註冊先將token記錄在資料庫
+            const sql1 = "UPDATE `members` SET `check_code`=? WHERE `m_sid`=?";
+            let newCode=jwt.sign({"m_sid":output.result.insertId,"email":req.body.email},process.env.JWT_KEY)
+            const [rs1]=await db.query(sql1,[newCode,output.result.insertId]);
+
             let testAccount = await nodemailer.createTestAccount();
             let transporter = nodemailer.createTransport({
                 host: "smtp.gmail.com",
@@ -414,12 +423,13 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
                 },
             });
+            // 讓用戶驗證
             let info = await transporter.sendMail({
                 from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
                 to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
                 subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
-                text: `Hello ${req.body.name}! 您已成功加入會員，前往登入`, // 預計會顯示的文字
-                html: `<h3>Hello ${req.body.name}! 您已成功加入會員，<a href="http://localhost:3000/members/login">前往登入</a></h3>`, // html body 實際顯示出來的結果
+                text: `Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，前往驗證並登入`, // 預計會顯示的文字
+                html: `<h3>Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，<a href="http://localhost:3000/members/confirm?id=${newCode}">前往驗證</a>並登入</h3>`, // html body 實際顯示出來的結果
             });
             
             console.log("Message sent: %s", info.messageId);
@@ -433,6 +443,40 @@ router.post('/signup', upload.none(),async (req, res)=>{
 
     res.json(output);
 
+});
+
+// 驗證
+router.get('/confirm', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }
+    if(res.locals.auth && res.locals.auth.m_sid){
+        console.log(res.locals.auth);
+        // return res.json(req.headers)
+        const sql=`SELECT check_code FROM members WHERE m_sid=${res.locals.auth.m_sid}`
+        const [rs]=await db.query(sql);
+        if(!rs.length){
+            output.error='沒有此會員資料'
+            return res.json(output);
+        }else{
+            const sql2=`UPDATE members SET check_email=1 WHERE m_sid=${res.locals.auth.m_sid}`;
+            const [rs2]=await db.query(sql2);
+            if(!rs2){
+                output.error='啥狀況';
+                return res.json(output);
+            }else{
+                output.success=true;
+                output.info='WELCOME　TO　JOIN　US';
+                return res.json(output);
+            }
+        }
+    }else{
+        // return res.json(req.headers)
+            output.error='您沒有得到授權/沒有此會員資料';
+            return res.json(output);
+    }
+    // return res.json(output);
 });
 
 // 登出
