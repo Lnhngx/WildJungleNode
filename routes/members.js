@@ -237,34 +237,41 @@ router.post('/login', async (req, res)=>{
         info: null,
         token: '',
         code: 0,
-        bodyData: req.body
     };
     if(! rs.length){
         output.error='帳密錯誤';
         output.code=401;
         return res.json(output);
+    }else{
+        // 比對密碼
+        const row=rs[0];
+        const compareResuly=await bcrypt.compare(password, row.password);
+        if(! compareResuly){
+            output.error='帳密錯誤';
+            output.code=402;
+            return res.json(output);
+        }else{
+
+            // 是否驗證過信件
+            if(!row.check_email){
+                output.error='請至您的信箱，收取驗證信';
+                output.code=452;
+                return res.json(output);
+            }else{
+                output.success = true;
+                output.token = jwt.sign({m_sid:row.m_sid, email}, process.env.JWT_KEY);
+                const sql3=`UPDATE members SET check_code=? WHERE m_sid=?`;
+                const [rs3]=await db.query(sql3,[output.token,row.m_sid])
+                output.account = {
+                    m_sid: row.m_sid,
+                    email: row.email,
+                    m_name: row.m_name,
+                };
+                return res.json(output);
+            }
+        }
     }
-  
-    const row=rs[0];
-
-    const compareResuly=await bcrypt.compare(password, row.password);
-    if(! compareResuly){
-        output.error='帳密錯誤';
-        output.code=402;
-        return res.json(output);
-    }
-    
-    output.success = true;
-    output.token = jwt.sign({m_sid:row.m_sid, email}, process.env.JWT_KEY);
-    output.account = {
-        m_sid: row.m_sid,
-        email: row.email,
-        m_name: row.m_name,
-    };
-
-    res.json(output);
-
-   
+    // return res.json(output);
 });
 
 // 取得對應sid的會員資料
@@ -320,7 +327,7 @@ router.post('/edit/:sid', async (req, res)=>{
                 // return res.json(rs)
                 if(rs2.changedRows!==0){
                     output.success=true;
-                    output.info='提醒! 密碼相同';
+                    output.info='提醒! 已更新，但密碼相同';
                     output.status=600;
                     return res.json(output);
                 }else{
@@ -500,6 +507,15 @@ router.get('/grade/list', async (req, res)=>{
     const sql="SELECT * FROM grade"
     const [rs]=await db.query(sql);
     res.json(rs)
+});
+
+// 增加信用卡資料
+router.post('/creditcard/add', async (req, res)=>{
+    // return res.json(req.body)
+    const{number,name,expiry,cvc}=req.body;
+    const sql="INSERT INTO `credit_card`(`credit_num`,`credit_name`, `credit_date`, `credit_code`,`m_id`) VALUES (?,?,?,?,?)"
+    const [rs]=await db.query(sql,[number,name,expiry,cvc,'17']);
+    return res.json(rs)
 });
 
 // 取得信用卡資料
