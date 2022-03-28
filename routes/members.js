@@ -189,15 +189,27 @@ async function getsidData(req,res){
         error:''
     }
     const sid=req.params.sid;
-    // SELECT `m_sid`,`email`,`m_name`,`gender`,`password`,`birthday`,`m_address` FROM `members` WHERE 1
-    const sql=`SELECT m_sid,email,m_name,gender,password,birthday,m_address FROM members WHERE m_sid=${sid}`
-    const [rs]=await db.query(sql)
-    if(!rs.length){
-        console.log(rs);
-        output.error='沒有此筆資料';
+
+    if(res.locals.auth && res.locals.auth.m_sid){
+        console.log(res.locals.auth.m_sid);
+        // SELECT m.`m_sid`,m.`email`,m.`m_name`,m.`password`,m.`birthday`,m.`m_address`,g.`img` FROM `members` m LEFT JOIN `grade` g ON m.`grade_sid`=g.`grade_sid` WHERE m.`m_sid`=8
+        const sql=`SELECT m.m_sid,m.email,m.m_name,m.gender,m.password,m.birthday,m.m_address,g.img FROM members m LEFT JOIN grade g ON m.grade_sid=g.grade_sid WHERE m.m_sid=${res.locals.auth.m_sid}`
+        const [rs]=await db.query(sql);
+        if(!rs.length){
+            // console.log(rs);
+            output.error='沒有此筆資料';
+        }
+        // rs[0].birthday=rs[0].birthday.split('T')[0];
+        output.success=true;
+        output.info=rs[0];
+        return output;
+    }else{
+        output.error='沒有授權';
+        return output;
     }
-    output.success=true
-    output.info=rs[0]
+
+    
+    
 
     return output;
 }
