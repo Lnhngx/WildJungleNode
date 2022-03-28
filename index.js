@@ -354,7 +354,13 @@ app.post('/chatbot', async (req, res) => {
         output.success = true;
         output.results = results[0];
     }
-    // const sql = `SELECT * FROM chatbot WHERE 1`;  //檢查用，正式時可刪除
+    if(message.indexOf('開放時間')!==-1 || message.indexOf('幾點開門')!==-1 || message.indexOf('營業')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    
     
     
     res.json(output);
