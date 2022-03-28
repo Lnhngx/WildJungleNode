@@ -319,7 +319,7 @@ app.post('/game-points', async (req, res) => {
 app.post('/chatbot', async (req, res) => {
     let output = {
         success: false,
-        results:{respond:'抱歉，我聽不懂你在說什麼?'}
+        results:{respond:'抱歉，我聽不懂你在說什麼?\n您可以點選專人客服為您服務。'}
     }
     const message = req.body.request;
     let sql = '';
@@ -354,7 +354,19 @@ app.post('/chatbot', async (req, res) => {
         output.success = true;
         output.results = results[0];
     }
-    // const sql = `SELECT * FROM chatbot WHERE 1`;  //檢查用，正式時可刪除
+    if(message.indexOf('開放時間')!==-1 || message.indexOf('幾點開門')!==-1 || message.indexOf('營業')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    if(message.indexOf('住宿')!==-1 || message.indexOf('房型')!==-1){
+        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%住宿資訊%'";
+        const [results] = await db.query(sql);
+        output.success = true;
+        output.results = results[0];
+    }
+    
     
     
     res.json(output);
