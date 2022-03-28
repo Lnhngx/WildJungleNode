@@ -319,7 +319,7 @@ app.post('/game-points', async (req, res) => {
 app.post('/chatbot', async (req, res) => {
     let output = {
         success: false,
-        results:{respond:'抱歉，我聽不懂你在說什麼?'}
+        results:{respond:'抱歉，我聽不懂你在說什麼?\n您可以點選專人客服為您服務。'}
     }
     const message = req.body.request;
     let sql = '';
