@@ -189,15 +189,27 @@ async function getsidData(req,res){
         error:''
     }
     const sid=req.params.sid;
-    // SELECT `m_sid`,`email`,`m_name`,`gender`,`password`,`birthday`,`m_address` FROM `members` WHERE 1
-    const sql=`SELECT m_sid,email,m_name,gender,password,birthday,m_address FROM members WHERE m_sid=${sid}`
-    const [rs]=await db.query(sql)
-    if(!rs.length){
-        console.log(rs);
-        output.error='沒有此筆資料';
+
+    if(res.locals.auth && res.locals.auth.m_sid){
+        console.log(res.locals.auth.m_sid);
+        // SELECT m.`m_sid`,m.`email`,m.`m_name`,m.`password`,m.`birthday`,m.`m_address`,g.`img` FROM `members` m LEFT JOIN `grade` g ON m.`grade_sid`=g.`grade_sid` WHERE m.`m_sid`=8
+        const sql=`SELECT m.m_sid,m.email,m.m_name,m.gender,m.password,m.birthday,m.m_address,g.img FROM members m LEFT JOIN grade g ON m.grade_sid=g.grade_sid WHERE m.m_sid=${res.locals.auth.m_sid}`
+        const [rs]=await db.query(sql);
+        if(!rs.length){
+            // console.log(rs);
+            output.error='沒有此筆資料';
+        }
+        // rs[0].birthday=rs[0].birthday.split('T')[0];
+        output.success=true;
+        output.info=rs[0];
+        return output;
+    }else{
+        output.error='沒有授權';
+        return output;
     }
-    output.success=true
-    output.info=rs[0]
+
+    
+    
 
     return output;
 }
@@ -237,34 +249,41 @@ router.post('/login', async (req, res)=>{
         info: null,
         token: '',
         code: 0,
-        bodyData: req.body
     };
     if(! rs.length){
         output.error='帳密錯誤';
         output.code=401;
         return res.json(output);
+    }else{
+        // 比對密碼
+        const row=rs[0];
+        const compareResuly=await bcrypt.compare(password, row.password);
+        if(! compareResuly){
+            output.error='帳密錯誤';
+            output.code=402;
+            return res.json(output);
+        }else{
+
+            // 是否驗證過信件
+            if(!row.check_email){
+                output.error='請至您的信箱，收取驗證信';
+                output.code=452;
+                return res.json(output);
+            }else{
+                output.success = true;
+                output.token = jwt.sign({m_sid:row.m_sid, email}, process.env.JWT_KEY);
+                const sql3=`UPDATE members SET check_code=? WHERE m_sid=?`;
+                const [rs3]=await db.query(sql3,[output.token,row.m_sid])
+                output.account = {
+                    m_sid: row.m_sid,
+                    email: row.email,
+                    m_name: row.m_name,
+                };
+                return res.json(output);
+            }
+        }
     }
-  
-    const row=rs[0];
-
-    const compareResuly=await bcrypt.compare(password, row.password);
-    if(! compareResuly){
-        output.error='帳密錯誤';
-        output.code=402;
-        return res.json(output);
-    }
-    
-    output.success = true;
-    output.token = jwt.sign({m_sid:row.m_sid, email}, process.env.JWT_KEY);
-    output.account = {
-        m_sid: row.m_sid,
-        email: row.email,
-        m_name: row.m_name,
-    };
-
-    res.json(output);
-
-   
+    // return res.json(output);
 });
 
 // 取得對應sid的會員資料
@@ -320,7 +339,7 @@ router.post('/edit/:sid', async (req, res)=>{
                 // return res.json(rs)
                 if(rs2.changedRows!==0){
                     output.success=true;
-                    output.info='提醒! 密碼相同';
+                    output.info='提醒! 已更新，但密碼相同';
                     output.status=600;
                     return res.json(output);
                 }else{
@@ -385,7 +404,7 @@ router.post('/signup', upload.none(),async (req, res)=>{
     if(!newAr.length){
 
         try{
-            const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`) VALUES (?,?,?,?,?)";
+            const sql = "INSERT INTO members ( `email`, `m_name`,`gender` ,`birthday`,`password`,`grade_sid`,`check_code`,`check_email`) VALUES (?,?,?,?,?,?,?,?)";
             
             const [result]=await db.query(sql,[
                 req.body.email,
@@ -393,17 +412,26 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 req.body.gender,
                 req.body.birthday || '',
                 bcrypt.hashSync(req.body.password),
+                1,
+                '',
+                0
             ]);
             console.log('result:',result);
             output.success=!!result.affectedRows;
             output.result=result;
-            console.log('result:',result.insertId);
+            console.log('resultID:',result.insertId);
         }catch(error){
             console.log('error:',error)
             output.error='無法註冊'
         }
         // 可成功註冊就寄信給用戶
         if(output.success){
+            // return res.json(req.body)
+            // 成功註冊先將token記錄在資料庫
+            const sql1 = "UPDATE `members` SET `check_code`=? WHERE `m_sid`=?";
+            let newCode=jwt.sign({"m_sid":output.result.insertId,"email":req.body.email},process.env.JWT_KEY)
+            const [rs1]=await db.query(sql1,[newCode,output.result.insertId]);
+
             let testAccount = await nodemailer.createTestAccount();
             let transporter = nodemailer.createTransport({
                 host: "smtp.gmail.com",
@@ -414,12 +442,13 @@ router.post('/signup', upload.none(),async (req, res)=>{
                 pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
                 },
             });
+            // 讓用戶驗證
             let info = await transporter.sendMail({
                 from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
                 to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
                 subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
-                text: `Hello ${req.body.name}! 您已成功加入會員，前往登入`, // 預計會顯示的文字
-                html: `<h3>Hello ${req.body.name}! 您已成功加入會員，<a href="http://localhost:3000/members/login">前往登入</a></h3>`, // html body 實際顯示出來的結果
+                text: `Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，前往驗證並登入`, // 預計會顯示的文字
+                html: `<h3>Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，<a href="http://localhost:3000/members/confirm?id=${newCode}">前往驗證</a>並登入</h3>`, // html body 實際顯示出來的結果
             });
             
             console.log("Message sent: %s", info.messageId);
@@ -433,6 +462,40 @@ router.post('/signup', upload.none(),async (req, res)=>{
 
     res.json(output);
 
+});
+
+// 驗證
+router.get('/confirm', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }
+    if(res.locals.auth && res.locals.auth.m_sid){
+        console.log(res.locals.auth);
+        // return res.json(req.headers)
+        const sql=`SELECT check_code FROM members WHERE m_sid=${res.locals.auth.m_sid}`
+        const [rs]=await db.query(sql);
+        if(!rs.length){
+            output.error='沒有此會員資料'
+            return res.json(output);
+        }else{
+            const sql2=`UPDATE members SET check_email=1 WHERE m_sid=${res.locals.auth.m_sid}`;
+            const [rs2]=await db.query(sql2);
+            if(!rs2){
+                output.error='啥狀況';
+                return res.json(output);
+            }else{
+                output.success=true;
+                output.info='WELCOME　TO　JOIN　US';
+                return res.json(output);
+            }
+        }
+    }else{
+        // return res.json(req.headers)
+            output.error='您沒有得到授權/沒有此會員資料';
+            return res.json(output);
+    }
+    // return res.json(output);
 });
 
 // 登出
@@ -456,6 +519,15 @@ router.get('/grade/list', async (req, res)=>{
     const sql="SELECT * FROM grade"
     const [rs]=await db.query(sql);
     res.json(rs)
+});
+
+// 增加信用卡資料
+router.post('/creditcard/add', async (req, res)=>{
+    // return res.json(req.body)
+    const{number,name,expiry,cvc}=req.body;
+    const sql="INSERT INTO `credit_card`(`credit_num`,`credit_name`, `credit_date`, `credit_code`,`m_id`) VALUES (?,?,?,?,?)"
+    const [rs]=await db.query(sql,[number,name,expiry,cvc,'17']);
+    return res.json(rs)
 });
 
 // 取得信用卡資料
