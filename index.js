@@ -152,7 +152,7 @@ app.get("/productspic", async (req, res) => {
 
 
 app.get("/productsreview", async (req, res) => {
-  const sql = "SELECT * FROM `productsreview` WHERE 1";
+  const sql = "SELECT * FROM `productsreview` ORDER BY `ReviewSid` DESC ";
 
   const [results, fields] = await db.query(sql);
 
