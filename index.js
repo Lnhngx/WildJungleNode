@@ -64,20 +64,12 @@ app.use(
     secret: "qwerqwer", //加密用字串
     store: sessionStore,
     cookie: {
-<<<<<<< HEAD
-      maxAge: 1200000,
-      //domain:'.alan.com'
-    }, //存活時間 單位是毫秒（20分鐘）
-  })
-);
-=======
         maxAge: 1200000,
         //domain:'.alan.com'
     }//存活時間 單位是毫秒（20分鐘）
 }));
 
 
->>>>>>> e2ca33fb9da93f43e59baefb028965aa4d22a6a3
 
 app.use("/roomplatform", require("./routes/roomplatform"));
 
@@ -110,13 +102,9 @@ app.get("/", (req, res) => {
 });
 // 定義路由
 
-<<<<<<< HEAD
-app.use("/members", require("./routes/members"));
-=======
 app.use('/roomplatform', require('./routes/roomplatform') );
 
 app.use('/members', require('./routes/members') );
->>>>>>> e2ca33fb9da93f43e59baefb028965aa4d22a6a3
 
 //會員
 app.get("/orders", async (req, res) => {
@@ -351,66 +339,6 @@ app.get("/game", async (req, res) => {
   // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
   // const [results] = await db.query(sql);
 });
-<<<<<<< HEAD
-app.post("/game-points", async (req, res) => {
-  const sql =
-    "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
-  const [result, fields] = await db.query(sql, [
-    req.body.point_id || "",
-    req.body.getTime_start,
-    req.body.getTime_end,
-    req.body.bonus_status,
-    req.body.m_id,
-  ]);
-  res.json("success");
-});
-app.post("/chatbot", async (req, res) => {
-  let output = {
-    success: false,
-    results: { respond: "抱歉，我聽不懂你在說什麼?" },
-  };
-  const message = req.body.request;
-  let sql = "";
-  console.log(message); //檢查用，正式時可刪除
-  if (
-    message.indexOf("你好") !== -1 ||
-    message.indexOf("午安") !== -1 ||
-    message.indexOf("早安") !== -1 ||
-    message.indexOf("晚安") !== -1
-  ) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%你好%'";
-    const [results] = await db.query(sql);
-    output.success = true;
-    output.results = results[0];
-  }
-  if (message.indexOf("地址") !== -1) {
-    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%地址%'";
-    const [results] = await db.query(sql);
-    output.success = true;
-    output.results = results[0];
-  }
-  if (message.indexOf("票價") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%票價%'";
-    const [results] = await db.query(sql);
-    output.success = true;
-    output.results = results[0];
-  }
-  if (message.indexOf("紅利") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%紅利%'";
-    const [results] = await db.query(sql);
-    output.success = true;
-    output.results = results[0];
-  }
-  if (message.indexOf("點數") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%點數%'";
-    const [results] = await db.query(sql);
-    output.success = true;
-    output.results = results[0];
-  }
-  // const sql = `SELECT * FROM chatbot WHERE 1`;  //檢查用，正式時可刪除
-
-  res.json(output);
-=======
 app.post('/game-points', async (req, res) => {
     const sql = "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
     const [result,fields]=await db.query(sql,[
@@ -476,7 +404,6 @@ app.post('/chatbot', async (req, res) => {
     
     
     res.json(output);
->>>>>>> e2ca33fb9da93f43e59baefb028965aa4d22a6a3
 });
 //遊戲
 app.get("/roomdetail", async (req, res) => {
@@ -487,26 +414,15 @@ app.get("/roomdetail", async (req, res) => {
   res.json(results);
 });
 //住宿
-<<<<<<< HEAD
-app.get("/roomplatform", async (req, res) => {
-  const sql =
-    "SELECT roomplatform.sid , roomplatform.service_score , roomplatform.clean_score , roomplatform.comfort_score , roomplatform.facility_score , roomplatform.cpValue_score, roomplatform.comments , members.m_name , orders_details_live.start  , orders_details_live.end, roomdetail.room_name FROM roomplatform JOIN members on roomplatform.m_sid = members.m_sid JOIN orders_details_live on roomplatform.order_detail_live_sid = orders_details_live.sid JOIN roomdetail on orders_details_live.room_sid = roomdetail.sid";
-=======
 app.get('/room-comments-list', async (req, res) => {
     const sql = "SELECT roomplatform.sid , roomplatform.service_score , roomplatform.clean_score , roomplatform.comfort_score , roomplatform.facility_score , roomplatform.cpValue_score, roomplatform.comments , members.m_name , orders_details_live.start  , orders_details_live.end, roomdetail.room_name FROM roomplatform JOIN members on roomplatform.m_sid = members.m_sid JOIN orders_details_live on roomplatform.order_detail_live_sid = orders_details_live.sid JOIN roomdetail on orders_details_live.room_sid = roomdetail.sid";
->>>>>>> e2ca33fb9da93f43e59baefb028965aa4d22a6a3
 
   const [results, fields] = await db.query(sql);
 
-<<<<<<< HEAD
-  res.json(results);
-});
-=======
     res.json(results);
 })
 
 
->>>>>>> e2ca33fb9da93f43e59baefb028965aa4d22a6a3
 //住宿
 app.get("/tour", async (req, res) => {
   const sql = "SELECT * FROM `address_1` WHERE 1";
