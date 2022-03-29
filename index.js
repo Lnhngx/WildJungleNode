@@ -115,13 +115,15 @@ app.get("/orders", async (req, res) => {
   res.json(results);
 });
 //購物車
-app.get("/animal-touch", async (req, res) => {
-  const sql = "SELECT * FROM `animal_touch` WHERE 1";
 
-  const [results, fields] = await db.query(sql);
+app.post('/activity', async (req, res) => {
+    sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
+    const [results] = await db.query(sql);
 
-  res.json(results);
-});
+    res.json(results);
+    console.log(req.body.sid);
+
+})
 //活動
 
 //商品
