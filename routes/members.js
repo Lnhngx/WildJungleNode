@@ -524,9 +524,24 @@ router.get('/grade/list', async (req, res)=>{
 // 增加信用卡資料
 router.post('/creditcard/add', async (req, res)=>{
     // return res.json(req.body)
-    const{number,name,expiry,cvc}=req.body;
-    const sql="INSERT INTO `credit_card`(`credit_num`,`credit_name`, `credit_date`, `credit_code`,`m_id`) VALUES (?,?,?,?,?)"
-    const [rs]=await db.query(sql,[number,name,expiry,cvc,'17']);
+    const output ={
+        success:false,
+        error:'',
+    }
+    if(res.locals.auth && res.locals.auth.email){
+        const{number,name,expiry,cvc}=req.body;
+        const sql="INSERT INTO `credit_card`(`credit_num`,`credit_name`, `credit_date`, `credit_code`,`m_id`) VALUES (?,?,?,?,?)"
+        const [rs]=await db.query(sql,[number,name,expiry,cvc,res.locals.auth.m_sid]);
+        // return res.json(rs);
+        if(!rs.insertId){
+            output.error='沒有新增'
+            return res.json(output);
+        }else{
+            output.success=true;
+            return res.json(output);
+        }
+    }
+    
     return res.json(rs)
 });
 
@@ -543,16 +558,24 @@ router.get('/creditcard/:sid', async (req, res)=>{
         const sql=`SELECT * FROM credit_card WHERE m_id=${sid}`
         const [rs]=await db.query(sql);
 
-        let newObj={}
-        rs.map((v,i)=>{
-            return newObj.m_sid=v.m_id
-        })
-        let list=[]
-        rs.map((v,i)=>{
-            list.push({"credit_sid":v.credit_sid,"credit_num":v.credit_num,"credit_date":v.credit_date,"credit_code":v.credit_code})
-        })
-        newObj.list=list
-        return res.json(newObj);
+        if(!rs.length){
+            output.error='尚未設定';
+            return res.json(output);
+        }else{
+            let newObj={}
+            rs.map((v,i)=>{
+                return newObj.m_sid=v.m_id
+            })
+            let list=[]
+            rs.map((v,i)=>{
+                list.push({"credit_sid":v.credit_sid,"credit_num":v.credit_num,"credit_date":v.credit_date,"credit_code":v.credit_code})
+            })
+            newObj.list=list
+            output.success=true;
+            output.info=newObj;
+            return res.json(output);
+        }
+        
         // {
         //     "m_sid": 8,
         //     "list": [
