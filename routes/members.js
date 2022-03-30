@@ -662,7 +662,7 @@ router.post('/forgotpass', async (req, res)=>{
     const {email} =req.body;
     // console.log(typeof(email))
     // return res.json(req.body.email)
-    const sql=`SELECT email FROM members WHERE 1`;
+    const sql=`SELECT m_sid,email FROM members WHERE 1`;
     const [rs]=await db.query(sql);
     const newArr= rs.map((v,i)=>{
         return v.email
@@ -677,6 +677,33 @@ router.post('/forgotpass', async (req, res)=>{
         if(yesno.length!==0){
             output.success=true;
             output.info='好的，已發送mail，請至您的信箱查看';
+
+            const sql1 = "UPDATE `members` SET `check_code`=? WHERE `m_sid`=?";
+            let newCode=jwt.sign({"m_sid":rs.m_sid,"email":email},process.env.JWT_KEY)
+            const [rs1]=await db.query(sql1,[newCode,rs.m_sid]);
+            // console.log(rs1)
+            let testAccount = await nodemailer.createTestAccount();
+            let transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true, // true for 465, false for other ports
+                auth: {
+                user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+                pass:process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+                },
+            });
+            // 讓用戶驗證
+            let info = await transporter.sendMail({
+                from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+                to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
+                subject: "Wild Jungle 通知:請儘速變更您的密碼", // 主旨
+                text: `您剛才操作忘記密碼步驟，收到驗證信請儘速變更您的密碼`, // 預計會顯示的文字
+                html: `<h3>您剛才操作忘記密碼步驟，收到驗證信請儘速變更您的密碼</h3><h4><a href="http://localhost:3000/members/password-change?auth=${newCode}">前往驗證</a>並登入</h4>`, // html body 實際顯示出來的結果
+            });
+            
+            console.log("Message sent: %s", info.messageId);
+
+
             return res.json(output);
         }else{
             output.error='此帳號沒有註冊過';
@@ -693,6 +720,53 @@ router.post('/forgotpass', async (req, res)=>{
     return res.json('測試')
 });
 
+// 更改密碼
+router.post('/changepass', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }    
+
+    if(res.locals.auth && res.locals.auth.email){
+        // SELECT password FROM members WHERE email=?
+        const sql2=`SELECT password FROM members WHERE email=?`
+        const [rs2]=await db.query(sql2,[res.locals.auth.email]);
+        // return res.json(rs2)
+        
+        // 沒有找到密碼
+        if(!rs2.length){
+            output.error='沒有資料'
+            return res.json(output);
+        }else{
+            // console.log(req.body.password)
+            // console.log(rs2[0].password)
+            
+            if(bcrypt.compareSync(req.body.password,rs2[0].password)){
+                output.error='不可與上一次的密碼相同'
+                return res.json(output);
+            }else{
+
+                const newPass=bcrypt.hashSync(req.body.password);
+                // UPDATE members SET password=? WHERE m_sid=?
+                const sql=`UPDATE members SET password=? WHERE email=?`
+                const [rs]=await db.query(sql,[newPass,res.locals.auth.email]);
+
+                if(rs.changedRows!==0){
+                    output.success=true;
+                    output.error='已更改成功，請重新登入';
+                    return res.json(output);
+                }else{
+                    output.error='變更失敗';
+                    return res.json(output);
+                }
+            }
+        }
+
+    }else{
+        output.error='沒有授權';
+        return res.json(output);
+    }
+});
 
 // router.get('/api/list', async (req, res)=>{
 //     res.json(await getListData(req, res));
