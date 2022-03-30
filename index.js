@@ -171,30 +171,6 @@ app.get("/productsmemberreview", async (req, res) => {
 
 app.use("/reviewproducts", require("./routes/productsitem"));
 
-// app.post('/add', async (req, res) => {
-//     const output = {
-//         success: false,
-//         error: ''
-//     };
-//     const sql = "INSERT INTO `productsreview` (`ReviewSid`, `ProductsReview`, `ReviewStar`, `Review`, `memberSid`, `ReviewDate`) VALUES (NULL, ?, ?,  ?, ?,current_timestamp())";
-
-//     const [result] = await db.query(sql, [
-//         req.body.ReviewSid,
-//         req.body.ProductsReview || null,
-//         req.body.ReviewStar || null,
-//         req.body.Review || null,
-//         req.body.memberSid || null,
-//         req.body.ReviewDate || 0,
-//     ]);
-//     console.log(result);
-//     output.success = !!result.affectedRows;
-//     output.result = result;
-//     res.json(output);
-// });
-
-
-
-
 
 
 //商品規格

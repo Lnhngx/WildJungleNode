@@ -73,31 +73,31 @@ router.post("/add", async (req, res) => {
 });
 
 router.get("/delete/:sid", async (req, res) => {
-  const sql = "DELETE FROM productsreview WHERE sid = ?";
+  const sql = "DELETE FROM productsreview WHERE ReviewSid = ?";
   const [result] = await db.query(sql, [req.params.sid]);
-  res.redirect("/product-item/list");
+  res.json(result);
 });
 
-router.get("/edit/:sid", async (req, res) => {
-  const sql = "SELECT * FROM product_item WHERE sid = ?";
-  const [rs] = await db.query(sql, [req.params.sid]);
-  if (!rs.length) {
-    return res.redirect("/product-item/list");
-  }
-  res.render("product-item/edit", rs[0]);
-});
+// router.get("/edit/:sid", async (req, res) => {
+//   const sql = "SELECT * FROM product_item WHERE sid = ?";
+//   const [rs] = await db.query(sql, [req.params.sid]);
+//   if (!rs.length) {
+//     return res.redirect("/product-item/list");
+//   }
+//   res.render("product-item/edit", rs[0]);
+// });
 
-router.post("/edit/:sid", async (req, res) => {
-  const output = {
-    success: false,
-    error: "",
-  };
-  const sql = "UPDATE `product_item` SET ? WHERE sid =?";
-  const [result] = await db.query(sql, [req.body, req.params.sid]);
+// router.post("/edit/:sid", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//   };
+//   const sql = "UPDATE `product_item` SET ? WHERE sid =?";
+//   const [result] = await db.query(sql, [req.body, req.params.sid]);
 
-  console.log(result);
-  output.success = !!result.changedRows;
-  output.result = result;
-  res.json(output);
-});
+//   console.log(result);
+//   output.success = !!result.changedRows;
+//   output.result = result;
+//   res.json(output);
+// });
 module.exports = router;
