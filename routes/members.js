@@ -555,7 +555,7 @@ router.get('/creditcard/:sid', async (req, res)=>{
     }
     if(res.locals.auth && res.locals.auth.email){
         const sid=req.params.sid;
-        const sql=`SELECT * FROM credit_card WHERE m_id=${sid}`
+        const sql=`SELECT * FROM credit_card WHERE m_id=${sid} ORDER BY credit_sid DESC`
         const [rs]=await db.query(sql);
 
         if(!rs.length){
@@ -568,7 +568,7 @@ router.get('/creditcard/:sid', async (req, res)=>{
             })
             let list=[]
             rs.map((v,i)=>{
-                list.push({"credit_sid":v.credit_sid,"credit_num":v.credit_num,"credit_date":v.credit_date,"credit_code":v.credit_code})
+                list.push({"credit_sid":v.credit_sid,"credit_num":v.credit_num,"credit_name":v.credit_name,"credit_date":v.credit_date,"credit_code":v.credit_code})
             })
             newObj.list=list
             output.success=true;
@@ -599,6 +599,74 @@ router.get('/creditcard/:sid', async (req, res)=>{
     
     }
     
+});
+
+// 刪除信用卡資料
+router.get('/creditcard/delete/:card', async (req, res)=>{
+    console.log(req.params.card)
+    // return res.json('params',req.params.card)
+    const output={
+        success:false,
+        error:''
+    }
+
+    const sql=`DELETE FROM credit_card WHERE credit_sid=${req.params.card}`;
+    const [rs]=await db.query(sql);
+    // console.log(rs)
+    // return res.json(rs)
+    if(rs.affectedRows===0){
+        output.error='沒有此筆資料'
+        return res.json(output)
+    }else{
+        output.success=true;
+        output.error='刪除成功'
+        return res.json(output)
+    }
+    return res.json(output)
+});
+
+// 編輯信用卡資料
+router.post('/creditcard/edit/:card', async (req, res)=>{
+    // console.log(req.body)
+    // return res.json(req.body)
+    const output={
+        success:false,
+        error:''
+    }
+    const {number,name,expiry,cvc}=req.body;
+    const sql2="SELECT * FROM credit_card WHERE credit_sid=?"
+    const [rs2]=await db.query(sql2,[req.params.card]);
+    console.log('rs2',rs2)
+    // return res.json(rs2)
+    if(!rs2.length){
+        output.error='沒有此筆信用卡資料'
+        return res.json(output)
+    }else{
+        
+        const sql="UPDATE credit_card SET credit_num=?,credit_name=?,credit_date=?,credit_code=? WHERE credit_sid=?"
+        const [rs]=await db.query(sql,[number,name,expiry,cvc,req.params.card]);
+        // return res.json(rs)
+        if(rs.changedRows!==0){
+            output.success=true;
+            output.error='修改成功';
+            return res.json(output)
+        }else{
+            output.error='沒有變更';
+            return res.json(output)
+        }
+        output.success=true;
+        return res.json(output)
+    }
+
+    const sql="UPDATE credit_card SET credit_num=?,credit_name=?,credit_date=?,credit_code=? WHERE credit_sid=?"
+    const [rs]=await db.query(sql,[number,name,expiry,cvc,req.params.card]);
+    return res.json(rs)
+    if(rs.changedRows){
+
+    }else{
+
+    }
+    return res.json(rs)
 });
 
 // 房間的訂單資料
