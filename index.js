@@ -25,10 +25,14 @@ const corsOptions = {
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, { cors: {} });
+let panda_total = 0;
 io.on("connection", (socket) => {
+  socket.emit("connection",panda_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
-  socket.on("join", (room, cb) => {
+  socket.on("join", (room, cb) => { 
+    panda_total = panda_total+1;
+    // console.log(panda_total)
     currentRoom = room;
     socket.join(room);
     cb(`你已進入${room}`);
@@ -38,6 +42,11 @@ io.on("connection", (socket) => {
   });
   // 以下程式碼拿來呈現離線用
   socket.on("disconnect", () => {
+    if(panda_total>0){
+      panda_total = panda_total-1;
+    }else{
+      panda_total = 0;
+    }
     console.log("user disconnected");
   });
 });
