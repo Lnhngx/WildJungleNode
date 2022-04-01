@@ -625,49 +625,7 @@ router.get('/creditcard/delete/:card', async (req, res)=>{
     return res.json(output)
 });
 
-// 編輯信用卡資料
-router.post('/creditcard/edit/:card', async (req, res)=>{
-    // console.log(req.body)
-    // return res.json(req.body)
-    const output={
-        success:false,
-        error:''
-    }
-    const {number,name,expiry,cvc}=req.body;
-    const sql2="SELECT * FROM credit_card WHERE credit_sid=?"
-    const [rs2]=await db.query(sql2,[req.params.card]);
-    console.log('rs2',rs2)
-    // return res.json(rs2)
-    if(!rs2.length){
-        output.error='沒有此筆信用卡資料'
-        return res.json(output)
-    }else{
-        
-        const sql="UPDATE credit_card SET credit_num=?,credit_name=?,credit_date=?,credit_code=? WHERE credit_sid=?"
-        const [rs]=await db.query(sql,[number,name,expiry,cvc,req.params.card]);
-        // return res.json(rs)
-        if(rs.changedRows!==0){
-            output.success=true;
-            output.error='修改成功';
-            return res.json(output)
-        }else{
-            output.error='沒有變更';
-            return res.json(output)
-        }
-        output.success=true;
-        return res.json(output)
-    }
 
-    const sql="UPDATE credit_card SET credit_num=?,credit_name=?,credit_date=?,credit_code=? WHERE credit_sid=?"
-    const [rs]=await db.query(sql,[number,name,expiry,cvc,req.params.card]);
-    return res.json(rs)
-    if(rs.changedRows){
-
-    }else{
-
-    }
-    return res.json(rs)
-});
 
 // 房間的訂單資料
 router.get('/orders/:sid', async (req, res)=>{
@@ -834,6 +792,17 @@ router.post('/changepass', async (req, res)=>{
         output.error='沒有授權';
         return res.json(output);
     }
+});
+
+
+
+router.get('/bonus/list/:sid', async (req, res)=>{
+
+    const sql="SELECT bl.bonusList_sid,bl.getTime_start,bl.getTime_end,bl.bonus_status,bp.name,bp.number,bp.limitDate FROM bonus_list bl JOIN bonus_point bp ON bl.point_id=bp.point_sid WHERE bl.m_id=?"
+    const [rs]=await db.query(sql,[req.params.sid]);
+    return res.json(rs)
+
+    
 });
 
 // router.get('/api/list', async (req, res)=>{
