@@ -125,15 +125,13 @@ app.get("/orders", async (req, res) => {
 });
 //購物車
 
+//活動
 app.post('/activity', async (req, res) => {
     sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
     const [results] = await db.query(sql);
-
     res.json(results);
-    console.log(req.body.sid);
-
 })
-//活動
+
 
 //商品
 app.get("/products", async (req, res) => {
@@ -408,6 +406,15 @@ app.get('/room-comments-list', async (req, res) => {
 
     res.json(results);
 })
+
+//熱門活動一覽
+app.get("/popularevents", async (req, res) => {
+  const sql = "SELECT * FROM `animal_activity` WHERE 1";
+
+  const [results, fields] = await db.query(sql);
+
+  res.json(results);
+});
 
 
 //住宿
