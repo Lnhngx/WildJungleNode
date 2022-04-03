@@ -7,19 +7,21 @@ const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
+// 7-11 api
 const GetData = require('../controllers/get_controller');
-
 const getData = new GetData();
 
 
-// router.get('/711/api', getData.getStroes); // 全台店家資料
+// 全台店家資料
+// router.get('/711/api', getData.getStroes); 
 router.get('/city/api',async(req,res)=>{
     const taiwan=require('../data/store_id.json');
     return res.json(taiwan.result)
 })
-router.get('/711-areas/api/:id', getData.getAreas); // 區域資料
-
-router.get('/711-oneareastores/api', getData.getAreaStores); // 台北市松山區店家資料
+// 區域資料
+router.get('/711-areas/api/:id', getData.getAreas); 
+// 某市某區店家資料
+router.get('/711-oneareastores/api', getData.getAreaStores); 
 
 
 async function getListData(req, res){
@@ -825,6 +827,52 @@ router.get('/bonus/list/:sid', async (req, res)=>{
     return res.json(output)
 
     
+});
+
+
+router.post('/convenience-store', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }
+    const {city,area,store}=req.body;
+
+    if(res.locals.auth && res.locals.auth.m_sid){
+        const sql2="SELECT city,area,store_name FROM convenience_store WHERE m_id=?";
+        const [rs2]=await db.query(sql2,[res.locals.auth.m_sid]);
+        // return res.json(rs2);
+        let ar=[];
+        rs2.forEach(el=>{
+            if(el.store_name===store){
+                ar.push(el)
+            }
+        })
+
+
+
+        
+        if(!ar.length){
+            try{
+                const sql="INSERT INTO `convenience_store`(`city`, `area`, `store_name`, `m_id`) VALUES (?,?,?,?)"
+                const [rs]=await db.query(sql,[city,area,store,res.locals.auth.m_sid]);
+                console.log(rs)
+                return res.json(rs);
+
+            }catch(ex){
+                console.log(ex);
+                output.error=ex || '儲存失敗';
+                return res.json(output)
+            }
+            
+        }else{
+            output.error='已有設定過'
+            return res.json(output);
+        }
+
+        
+    }else{
+        return res.json('沒有授權')
+    }
 });
 
 // router.get('/api/list', async (req, res)=>{
