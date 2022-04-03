@@ -333,7 +333,24 @@ app.post('/game-points', async (req, res) => {
         req.body.bonus_status,
         req.body.m_id,
     ])
-    res.json('success')
+    const output={
+      id:0,
+      info:'',
+    }
+    const sql2="SELECT bp.number FROM bonus_point bp JOIN bonus_list bl ON bp.point_sid =bl.point_id WHERE bl.bonusList_sid=?";
+    const [rs2]=await db.query(sql2,[result.insertId]);
+
+    output.id=result.insertId;
+    
+    output.info=rs2[0];
+    output.info['getTime_start']=req.body.getTime_start;
+    output.info['getTime_end']=req.body.getTime_end;
+    output.info['bonus_status']=req.body.bonus_status;
+    output.info['m_id']=req.body.m_id;
+
+
+    return res.json(output);
+    // res.json('success')
 })
 app.post('/chatbot', async (req, res) => {
     let output = {

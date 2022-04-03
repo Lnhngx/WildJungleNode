@@ -7,6 +7,16 @@ const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
+const GetData = require('../controllers/get_controller');
+
+const getData = new GetData();
+
+
+// router.get('/711/api', getData.getStroes); // 全台店家資料
+router.get('/711-areas/api', getData.getAreas); // 台北市區域資料
+router.get('/711-oneareastores/api', getData.getAreaStores); // 台北市松山區店家資料
+
+
 async function getListData(req, res){
     const perPage = 5; // 每一頁最多幾筆
     // 用戶要看第幾頁
@@ -191,7 +201,7 @@ async function getsidData(req,res){
     const sid=req.params.sid;
 
     if(res.locals.auth && res.locals.auth.m_sid){
-        console.log(res.locals.auth.m_sid);
+        // console.log(res.locals.auth.m_sid);
         // SELECT m.`m_sid`,m.`email`,m.`m_name`,m.`password`,m.`birthday`,m.`m_address`,g.`img` FROM `members` m LEFT JOIN `grade` g ON m.`grade_sid`=g.`grade_sid` WHERE m.`m_sid`=8
         const sql=`SELECT m.m_sid,m.email,m.m_name,m.gender,m.password,m.birthday,m.m_address,g.img FROM members m LEFT JOIN grade g ON m.grade_sid=g.grade_sid WHERE m.m_sid=${res.locals.auth.m_sid}`
         const [rs]=await db.query(sql);
@@ -213,6 +223,7 @@ async function getsidData(req,res){
 
     return output;
 }
+
 
 
 
@@ -510,10 +521,6 @@ router.get('/logout', async (req, res)=>{
 });
 
 
-// 刪除
-
-
-
 // 取得等級的json檔
 router.get('/grade/list', async (req, res)=>{
     const sql="SELECT * FROM grade"
@@ -797,10 +804,20 @@ router.post('/changepass', async (req, res)=>{
 
 
 router.get('/bonus/list/:sid', async (req, res)=>{
+    const output={
+        success:false,
+        error:''
+    }
 
-    const sql="SELECT bl.bonusList_sid,bl.getTime_start,bl.getTime_end,bl.bonus_status,bp.name,bp.number,bp.limitDate FROM bonus_list bl JOIN bonus_point bp ON bl.point_id=bp.point_sid WHERE bl.m_id=?"
+    const sql="SELECT bl.bonusList_sid,bl.getTime_start,bl.getTime_end,bl.bonus_status,bp.name,bp.number,bp.limitDate FROM bonus_list bl JOIN bonus_point bp ON bl.point_id=bp.point_sid WHERE bl.m_id=? ORDER BY bonusList_sid DESC"
     const [rs]=await db.query(sql,[req.params.sid]);
-    return res.json(rs)
+    if(!rs.length){
+        output.error='沒有獲得的點數'
+    }else{
+        output.success=true
+        output.info=rs
+    }
+    return res.json(output)
 
     
 });
