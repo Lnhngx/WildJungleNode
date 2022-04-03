@@ -13,7 +13,12 @@ const getData = new GetData();
 
 
 // router.get('/711/api', getData.getStroes); // 全台店家資料
-router.get('/711-areas/api', getData.getAreas); // 台北市區域資料
+router.get('/city/api',async(req,res)=>{
+    const taiwan=require('../data/store_id.json');
+    return res.json(taiwan.result)
+})
+router.get('/711-areas/api/:id', getData.getAreas); // 區域資料
+
 router.get('/711-oneareastores/api', getData.getAreaStores); // 台北市松山區店家資料
 
 
