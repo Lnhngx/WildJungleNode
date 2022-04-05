@@ -11,8 +11,7 @@ const router = express.Router();
 const GetData = require('../controllers/get_controller');
 const getData = new GetData();
 
-
-// 全台店家資料
+// 全台7-11店家資料
 // router.get('/711/api', getData.getStroes); 
 router.get('/city/api',async(req,res)=>{
     const taiwan=require('../data/store_id.json');
@@ -233,7 +232,6 @@ async function getsidData(req,res){
 
 
 
-
 // 取得房型訂單資料
 router.get('/api/orders', async (req, res) => {
     const sql ="SELECT m.`m_sid`,m.`email`,o.`amount`,o.`order_sid`,o.`order_date`,tp.`room_sid`,tp.`start`,tp.`end` FROM `members` m JOIN `orders` o ON m.`m_sid`=o.`users_sid` JOIN `orders_details_live` tp ON o.`order_sid`=tp.`orders_sid` ORDER BY m.`m_sid` DESC";
@@ -308,6 +306,7 @@ router.post('/login', async (req, res)=>{
 router.get('/edit/:sid', async (req, res)=>{
     res.json(await getsidData(req, res));
 });
+
 // 修改
 router.post('/edit/:sid', async (req, res)=>{
     // return res.json(req.body)
@@ -397,6 +396,7 @@ router.post('/edit/:sid', async (req, res)=>{
     // res.json(rs)
     // res.json(output)
 });
+
 // 註冊
 router.post('/signup', upload.none(),async (req, res)=>{
     // return res.json(req.body)
@@ -552,6 +552,7 @@ router.post('/creditcard/add', async (req, res)=>{
             return res.json(output);
         }else{
             output.success=true;
+            output.info=rs.insertId
             return res.json(output);
         }
     }
@@ -809,7 +810,7 @@ router.post('/changepass', async (req, res)=>{
 });
 
 
-
+// 取得會員點數資訊
 router.get('/bonus/list/:sid', async (req, res)=>{
     const output={
         success:false,
@@ -829,35 +830,46 @@ router.get('/bonus/list/:sid', async (req, res)=>{
     
 });
 
-
+// 便利商店配送設定
 router.post('/convenience-store', async (req, res)=>{
     const output={
         success:false,
         error:''
     }
-    const {city,area,store}=req.body;
+    const {city,area,store,m_sid}=req.body;
 
-    if(res.locals.auth && res.locals.auth.m_sid){
-        const sql2="SELECT city,area,store_name FROM convenience_store WHERE m_id=?";
-        const [rs2]=await db.query(sql2,[res.locals.auth.m_sid]);
+    
+        const sql2="SELECT \`city\`,\`area\`,\`store_name\` FROM \`convenience_store\` WHERE \`m_id\`=?";
+        const [rs2]=await db.query(sql2,[m_sid]);
         // return res.json(rs2);
         let ar=[];
         rs2.forEach(el=>{
+            // console.log(el)
             if(el.store_name===store){
-                ar.push(el)
+                ar.push(el);
             }
         })
+        // return res.json(ar);
 
-
-
-        
         if(!ar.length){
             try{
-                const sql="INSERT INTO `convenience_store`(`city`, `area`, `store_name`, `m_id`) VALUES (?,?,?,?)"
-                const [rs]=await db.query(sql,[city,area,store,res.locals.auth.m_sid]);
+                // INSERT INTO convenience_store(city, area, store_name,m_id) VALUES ('台北市','新莊區','新莊','8')
+                const sql=`INSERT INTO \`convenience_store\`(\`city\`, \`area\`, \`store_name\`, \`m_id\`) VALUES (?,?,?,?)`
+                const [rs]=await db.query(sql,[city,area,store,m_sid]);
                 console.log(rs)
-                return res.json(rs);
-
+                // return res.json(rs);
+                if(!rs.insertId){
+                    output.error='加入失敗'
+                    return res.json(output)
+                }else{
+                    const sql2="SELECT `store_sid`,`store_name` FROM `convenience_store` WHERE `store_sid`=?"
+                    const [rs2]=await db.query(sql2,[rs.insertId]);
+                    // return res.json(rs2)
+                    output.success=true;
+                    output.error='加入成功';
+                    output.info=rs2;
+                    return res.json(output)
+                }
             }catch(ex){
                 console.log(ex);
                 output.error=ex || '儲存失敗';
@@ -865,66 +877,59 @@ router.post('/convenience-store', async (req, res)=>{
             }
             
         }else{
-            output.error='已有設定過'
+            output.error='已有設定過唷!'
             return res.json(output);
         }
 
         
-    }else{
-        return res.json('沒有授權')
-    }
+    
 });
 
-// router.get('/api/list', async (req, res)=>{
-//     res.json(await getListData(req, res));
-// });
-// router.get('/api/orders', async (req, res)=>{
-//     res.json(await getorderData(req, res));
-// });
-
-// router.get('/add', async (req, res)=>{
-//     res.render('address-book/add');
-// });
-// // multipart/form-data
-// router.post('/add2', upload.none(), async (req, res)=>{
-//     res.json(req.body);
-// });
-
-
-// router.get('/delete/:sid', async (req, res)=>{
-//     // req.get('Referer') // 從哪裡來
-//     const sql = "DELETE FROM address_book WHERE sid=?";
-//     const [result] = await db.query(sql, [req.params.sid]);
-//     res.redirect('/address-book/list');
-// });
-
-// router.get('/edit/:sid', async (req, res)=>{
-//     const sql = "SELECT * FROM address_book WHERE sid=?";
-//     const [rs] = await db.query(sql, [req.params.sid]);
-
-//     if(! rs.length){
-//         return res.redirect('/address-book/list');
-//     }
-
-//     res.render('address-book/edit', rs[0]);
-// });
-
-// router.post('/edit/:sid', async (req, res)=>{
-//     const output = {
-//         success: false,
-//         error: ''
-//     };
-
-//     const sql = "UPDATE `address_book` SET ? WHERE sid=?";
+// 取得會員設定的超商資訊
+router.get('/convenience-store', async (req, res)=>{
+    const output={
+        success:false,
+        error:'',
+        info:[]
+    }
+    const sql="SELECT store_sid,store_name FROM convenience_store WHERE m_id=?"
+    const [rs]=await db.query(sql,[req.query.m_id]);
+    // return res.json(rs)
+    if(!rs.length){
+        output.error='尚未設定'
+        return res.json(output)
+    }else{
+        output.success=true;
+        output.info=rs;
+        return res.json(output)
+    }
+    // return res.json(output)
+});
 
 
-//     const [result] = await db.query(sql, [req.body, req.params.sid]);
+router.post('/convenience-store-delete',async (req,res)=>{
+    const output={
+        success:false,
+        error:''
+    }
+    const {store_sid}=req.body;
+    console.log(store_sid)
+    // return res.json(store_sid)
+    
+        
+        const sql=`DELETE FROM convenience_store WHERE store_sid=${store_sid}`;
+        const [rs]=await db.query(sql);
+        // return res.json(rs);
+        if(rs.affectedRows!==0){
+            output.success=true;
+            output.error="已刪除成功";
+            return res.json(output);
+        }else{
+            output.error='沒有此筆資料'
+            return res.json(output);
+        }
+    
+})
 
-//     console.log(result);
-//     output.success = !! result.changedRows;
-//     output.result = result;
-
-//     res.json(output);
-// });
 
 module.exports = router;
