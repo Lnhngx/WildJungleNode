@@ -535,6 +535,13 @@ router.get('/grade/list', async (req, res)=>{
     res.json(rs)
 });
 
+router.get('/product-like', async (req, res)=>{
+    const sql="SELECT `ProductSid`,`ProductsName`,`ProductsPrice`,`ProductsMainPic` FROM `products`"
+    const [rs]=await db.query(sql);
+
+    return res.json(rs)
+});
+
 // 增加信用卡資料
 router.post('/creditcard/add', async (req, res)=>{
     // return res.json(req.body)
@@ -906,7 +913,7 @@ router.get('/convenience-store', async (req, res)=>{
     // return res.json(output)
 });
 
-
+// 刪除會員設定的超商資訊
 router.post('/convenience-store-delete',async (req,res)=>{
     const output={
         success:false,
@@ -930,6 +937,8 @@ router.post('/convenience-store-delete',async (req,res)=>{
         }
     
 })
+
+
 
 
 module.exports = router;
