@@ -426,7 +426,7 @@ app.get('/room-comments-list', async (req, res) => {
 
 //熱門活動一覽
 app.get("/popularevents", async (req, res) => {
-  const sql = "SELECT * FROM `animal_activity` WHERE 1";
+  const sql = "SELECT * FROM `animal_activity` ORDER BY `actDate` ASC";
 
   const [results, fields] = await db.query(sql);
 
