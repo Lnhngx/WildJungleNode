@@ -838,105 +838,105 @@ router.get('/bonus/list/:sid', async (req, res)=>{
 });
 
 // 便利商店配送設定
-router.post('/convenience-store', async (req, res)=>{
-    const output={
-        success:false,
-        error:''
-    }
-    const {city,area,store,m_sid}=req.body;
+// router.post('/convenience-store', async (req, res)=>{
+//     const output={
+//         success:false,
+//         error:''
+//     }
+//     const {city,area,store,m_sid}=req.body;
 
     
-        const sql2="SELECT \`city\`,\`area\`,\`store_name\` FROM \`convenience_store\` WHERE \`m_id\`=?";
-        const [rs2]=await db.query(sql2,[m_sid]);
-        // return res.json(rs2);
-        let ar=[];
-        rs2.forEach(el=>{
-            // console.log(el)
-            if(el.store_name===store){
-                ar.push(el);
-            }
-        })
-        // return res.json(ar);
+//         const sql2="SELECT \`city\`,\`area\`,\`store_name\` FROM \`convenience_store\` WHERE \`m_id\`=?";
+//         const [rs2]=await db.query(sql2,[m_sid]);
+//         // return res.json(rs2);
+//         let ar=[];
+//         rs2.forEach(el=>{
+//             // console.log(el)
+//             if(el.store_name===store){
+//                 ar.push(el);
+//             }
+//         })
+//         // return res.json(ar);
 
-        if(!ar.length){
-            try{
-                // INSERT INTO convenience_store(city, area, store_name,m_id) VALUES ('台北市','新莊區','新莊','8')
-                const sql=`INSERT INTO \`convenience_store\`(\`city\`, \`area\`, \`store_name\`, \`m_id\`) VALUES (?,?,?,?)`
-                const [rs]=await db.query(sql,[city,area,store,m_sid]);
-                console.log(rs)
-                // return res.json(rs);
-                if(!rs.insertId){
-                    output.error='加入失敗'
-                    return res.json(output)
-                }else{
-                    const sql2="SELECT `store_sid`,`store_name` FROM `convenience_store` WHERE `store_sid`=?"
-                    const [rs2]=await db.query(sql2,[rs.insertId]);
-                    // return res.json(rs2)
-                    output.success=true;
-                    output.error='加入成功';
-                    output.info=rs2;
-                    return res.json(output)
-                }
-            }catch(ex){
-                console.log(ex);
-                output.error=ex || '儲存失敗';
-                return res.json(output)
-            }
+//         if(!ar.length){
+//             try{
+//                 // INSERT INTO convenience_store(city, area, store_name,m_id) VALUES ('台北市','新莊區','新莊','8')
+//                 const sql=`INSERT INTO \`convenience_store\`(\`city\`, \`area\`, \`store_name\`, \`m_id\`) VALUES (?,?,?,?)`
+//                 const [rs]=await db.query(sql,[city,area,store,m_sid]);
+//                 console.log(rs)
+//                 // return res.json(rs);
+//                 if(!rs.insertId){
+//                     output.error='加入失敗'
+//                     return res.json(output)
+//                 }else{
+//                     const sql2="SELECT `store_sid`,`store_name` FROM `convenience_store` WHERE `store_sid`=?"
+//                     const [rs2]=await db.query(sql2,[rs.insertId]);
+//                     // return res.json(rs2)
+//                     output.success=true;
+//                     output.error='加入成功';
+//                     output.info=rs2;
+//                     return res.json(output)
+//                 }
+//             }catch(ex){
+//                 console.log(ex);
+//                 output.error=ex || '儲存失敗';
+//                 return res.json(output)
+//             }
             
-        }else{
-            output.error='已有設定過唷!'
-            return res.json(output);
-        }
+//         }else{
+//             output.error='已有設定過唷!'
+//             return res.json(output);
+//         }
 
         
     
-});
+// });
 
 // 取得會員設定的超商資訊
-router.get('/convenience-store', async (req, res)=>{
-    const output={
-        success:false,
-        error:'',
-        info:[]
-    }
-    const sql="SELECT store_sid,store_name FROM convenience_store WHERE m_id=?"
-    const [rs]=await db.query(sql,[req.query.m_id]);
-    // return res.json(rs)
-    if(!rs.length){
-        output.error='尚未設定'
-        return res.json(output)
-    }else{
-        output.success=true;
-        output.info=rs;
-        return res.json(output)
-    }
-    // return res.json(output)
-});
+// router.get('/convenience-store', async (req, res)=>{
+//     const output={
+//         success:false,
+//         error:'',
+//         info:[]
+//     }
+//     const sql="SELECT store_sid,store_name FROM convenience_store WHERE m_id=?"
+//     const [rs]=await db.query(sql,[req.query.m_id]);
+//     // return res.json(rs)
+//     if(!rs.length){
+//         output.error='尚未設定'
+//         return res.json(output)
+//     }else{
+//         output.success=true;
+//         output.info=rs;
+//         return res.json(output)
+//     }
+//     // return res.json(output)
+// });
 
 // 刪除會員設定的超商資訊
-router.post('/convenience-store-delete',async (req,res)=>{
-    const output={
-        success:false,
-        error:''
-    }
-    const {store_sid}=req.body;
-    console.log(store_sid)
-    // return res.json(store_sid)
+// router.post('/convenience-store-delete',async (req,res)=>{
+//     const output={
+//         success:false,
+//         error:''
+//     }
+//     const {store_sid}=req.body;
+//     console.log(store_sid)
+//     // return res.json(store_sid)
     
         
-        const sql=`DELETE FROM convenience_store WHERE store_sid=${store_sid}`;
-        const [rs]=await db.query(sql);
-        // return res.json(rs);
-        if(rs.affectedRows!==0){
-            output.success=true;
-            output.error="已刪除成功";
-            return res.json(output);
-        }else{
-            output.error='沒有此筆資料'
-            return res.json(output);
-        }
+//         const sql=`DELETE FROM convenience_store WHERE store_sid=${store_sid}`;
+//         const [rs]=await db.query(sql);
+//         // return res.json(rs);
+//         if(rs.affectedRows!==0){
+//             output.success=true;
+//             output.error="已刪除成功";
+//             return res.json(output);
+//         }else{
+//             output.error='沒有此筆資料'
+//             return res.json(output);
+//         }
     
-})
+// })
 
 
 
