@@ -535,6 +535,7 @@ router.get('/grade/list', async (req, res)=>{
     res.json(rs)
 });
 
+// 取得商品列表
 router.get('/product-like', async (req, res)=>{
     const sql="SELECT `ProductSid`,`ProductsName`,`ProductsPrice`,`ProductsMainPic` FROM `products`"
     const [rs]=await db.query(sql);
@@ -542,7 +543,120 @@ router.get('/product-like', async (req, res)=>{
     return res.json(rs)
 });
 
+router.get('/product-like-info/:m_id', async (req, res)=>{
+    const output={
+        success: false,
+        error:''
+    }
+    const sql="SELECT p_id FROM favorite WHERE m_id=?"
+    const [rs]=await db.query(sql,[req.params.m_id]);
+
+    if(!rs.length){
+        output.error='沒有已加入收藏的內容'
+    }else{
+        const pId=rs.map((v,i)=>{
+            return v.p_id
+        })
+        const pIdtoString=pId.map((v,i)=>{
+            return v.split(',')
+        })
+        // 資料庫已收藏的商品
+        const someCombined=pIdtoString.reduce(
+            function(a, b) {
+                return a.concat(b);
+            },
+            []
+            );
+        // console.log(someCombined)
+        output.success=true;
+        output.info=someCombined;
+        return res.json(output);
+    }
+    return res.json(output)
+});
+
+// router.post('/product-like', async (req, res)=>{
+//     const output={
+//         success: false,
+//         error:''
+//     }
+//     const {p_id,add_time,m_id}=req.body;
+//     // return res.json(p_id.split(','))
+//     const sql2="SELECT p_id,add_time,m_id FROM favorite WHERE m_id=?"
+//     const [rs2]=await db.query(sql2,[m_id]);
+//     // return res.json(rs2)
+//     if(!rs2.length){
+        
+//         try{
+//             const sql="INSERT INTO `favorite`(`p_id`, `add_time`, `m_id`) VALUES (?,?,?) "
+//             const [rs]=await db.query(sql,[p_id,add_time,m_id]);
+//         // INSERT INTO `favorite`(`p_id`, `add_time`, `m_id`) VALUES ('1,5','2022/04/06',3)
+    
+//             return res.json(rs)
+//         }catch(err){
+//             console.log(err)
+//             return res.json(err)
+//         }
+//     }else{
+//         // return res.json(rs2)
+//         const newLike=p_id.split(',')
+//         const a1=rs2.map((v,i)=>{
+//             return v.p_id
+//         })
+//         const b2=a1.map((v,i)=>{
+//             return v.split(',')
+//         })
+//         // 資料庫已收藏的商品
+//         const someCombined=b2.reduce(
+//             function(a, b) {
+//               return a.concat(b);
+//             },
+//             []
+//           );
+//         // return res.json(someCombined);
+        
+//         let kk=[] //找出相同項目
+//         let otherEl=[]
+//         if(someCombined.length>newLike.length){
+//             someCombined.forEach((v)=>{
+//                 newLike.forEach((el)=>{
+//                     // console.log(v,el)
+//                     if(v===el){
+//                         kk.push(el)
+//                     }
+//                 })
+//             })
+            
+//         }else{
+//             newLike.forEach((v)=>{
+//                 someCombined.forEach((el)=>{
+//                     // console.log(v,el)
+//                     if(v===el){
+//                         kk.push(el)
+//                     }
+//                 })
+//             })
+//         }
+//         let zz=[]
+//         if(kk.length!==0){
+            
+//             output.error='有項目已加入過'
+//             output.info=kk;
+//         }else{
+//             output.success=true;
+//             output.info='加入成功';
+//         }
+//         return res.json(zz)
+
+//         // return res.json(rs2[0].p_id.split(','))
+//         // const sql3="INSERT INTO `favorite`(`p_id`, `add_time`, `m_id`) VALUES (?,?,?) "
+//         //     const [rs3]=await db.query(sql,[p_id,add_time,m_id]);
+//     }
+    
+// });
+
 // 增加信用卡資料
+
 router.post('/creditcard/add', async (req, res)=>{
     // return res.json(req.body)
     const output ={
@@ -836,6 +950,10 @@ router.get('/bonus/list/:sid', async (req, res)=>{
 
     
 });
+
+
+
+
 
 // 便利商店配送設定
 // router.post('/convenience-store', async (req, res)=>{
