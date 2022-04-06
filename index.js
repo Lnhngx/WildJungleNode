@@ -27,11 +27,11 @@ const { Server } = require("socket.io");
 const io = new Server(server, { cors: {} });
 let panda_total = 0;
 io.on("connection", (socket) => {
-  socket.emit("connection",panda_total);
+  socket.emit("connection", panda_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
-  socket.on("join", (room, cb) => { 
-    panda_total = panda_total+1;
+  socket.on("join", (room, cb) => {
+    panda_total = panda_total + 1;
     // console.log(panda_total)
     currentRoom = room;
     socket.join(room);
@@ -42,9 +42,9 @@ io.on("connection", (socket) => {
   });
   // 以下程式碼拿來呈現離線用
   socket.on("disconnect", () => {
-    if(panda_total>0){
-      panda_total = panda_total-1;
-    }else{
+    if (panda_total > 0) {
+      panda_total = panda_total - 1;
+    } else {
       panda_total = 0;
     }
     console.log("user disconnected");
@@ -73,12 +73,11 @@ app.use(
     secret: "qwerqwer", //加密用字串
     store: sessionStore,
     cookie: {
-        maxAge: 1200000,
-        //domain:'.alan.com'
-    }//存活時間 單位是毫秒（20分鐘）
-}));
-
-
+      maxAge: 1200000,
+      //domain:'.alan.com'
+    }, //存活時間 單位是毫秒（20分鐘）
+  })
+);
 
 app.use("/roomplatform", require("./routes/roomplatform"));
 
@@ -111,27 +110,47 @@ app.get("/", (req, res) => {
 });
 // 定義路由
 
-app.use('/roomplatform', require('./routes/roomplatform') );
+app.use("/roomplatform", require("./routes/roomplatform"));
 
-app.use('/members', require('./routes/members') );
+app.use("/members", require("./routes/members"));
 
 //會員
-app.get("/orders", async (req, res) => {
-  const sql = "SELECT * FROM `orders` WHERE 1";
 
-  const [results, fields] = await db.query(sql);
-
-  res.json(results);
-});
 //購物車
+app.post("/carts/order", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const data = req.body.order;
+  const data2 = req.body.order_detail_product;
+  const o_sql =
+    "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`) VALUES (?,?,?,NOW())";
+
+  await db.query(o_sql, [data.m_sid, data.payment_sid, data.amount]);
+
+  const o_sid = results.insertId; //抓最新加入的訂單ID
+  const od_sql = `INSERT INTO orders_details_products(order_sid, product_sid,product_name, product_price, product_quantity) VALUES (${o_sid}, ?, ?, ?, ?)`;
+  data2.map((v, i) => {
+    db.query(od_sql, [
+      data2[i].sid,
+      data2[i].name,
+      data2[i].price,
+      data2[i].quantity,
+    ]);
+  });
+  output.success = true;
+  return res.json(output.success);
+});
+
 
 //活動
-app.post('/activity', async (req, res) => {
-    sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
-    const [results] = await db.query(sql);
-    res.json(results);
-})
-
+app.post("/activity", async (req, res) => {
+  sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
+  const [results] = await db.query(sql);
+  res.json(results);
+});
 
 //商品
 app.get("/products", async (req, res) => {
@@ -159,7 +178,6 @@ app.get("/productspic", async (req, res) => {
 });
 //商品評價星星
 
-
 app.get("/productsreview", async (req, res) => {
   const sql = "SELECT * FROM `productsreview` ORDER BY `ReviewSid` DESC ";
 
@@ -169,16 +187,14 @@ app.get("/productsreview", async (req, res) => {
 });
 
 app.get("/productsmemberreview", async (req, res) => {
-  const sql = "SELECT `m_name` ,`m_sid` ,`memberSid`, `ProductsReview`FROM `members`, `productsreview`  WHERE `m_sid` = `memberSid` ORDER BY `ReviewSid` DESC";
+  const sql =
+    "SELECT `m_name` ,`m_sid` ,`memberSid`, `ProductsReview`FROM `members`, `productsreview`  WHERE `m_sid` = `memberSid` ORDER BY `ReviewSid` DESC";
   //const sql = "SELECT `m_name` ,`m_sid` FROM `members`  WHERE 1";
   const [results, fields] = await db.query(sql);
   res.json(results);
 });
 
-
 app.use("/reviewproducts", require("./routes/productsitem"));
-
-
 
 //商品規格
 app.get("/productsspec", async (req, res) => {
@@ -324,88 +340,98 @@ app.get("/game", async (req, res) => {
   // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
   // const [results] = await db.query(sql);
 });
-app.post('/game-points', async (req, res) => {
-    const sql = "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
-    const [result,fields]=await db.query(sql,[
-        req.body.point_id || '',
-        req.body.getTime_start,
-        req.body.getTime_end,
-        req.body.bonus_status,
-        req.body.m_id,
-    ])
-    const output={
-      id:0,
-      info:'',
-    }
-    const sql2="SELECT bp.number FROM bonus_point bp JOIN bonus_list bl ON bp.point_sid =bl.point_id WHERE bl.bonusList_sid=?";
-    const [rs2]=await db.query(sql2,[result.insertId]);
+app.post("/game-points", async (req, res) => {
+  const sql =
+    "INSERT INTO `bonus_list` ( `point_id`, `getTime_start`,`getTime_end` ,`bonus_status`,`m_id`) VALUES (?,?,?,?,?)";
+  const [result, fields] = await db.query(sql, [
+    req.body.point_id || "",
+    req.body.getTime_start,
+    req.body.getTime_end,
+    req.body.bonus_status,
+    req.body.m_id,
+  ]);
+  const output = {
+    id: 0,
+    info: "",
+  };
+  const sql2 =
+    "SELECT bp.number FROM bonus_point bp JOIN bonus_list bl ON bp.point_sid =bl.point_id WHERE bl.bonusList_sid=?";
+  const [rs2] = await db.query(sql2, [result.insertId]);
 
-    output.id=result.insertId;
-    
-    output.info=rs2[0];
-    output.info['getTime_start']=req.body.getTime_start;
-    output.info['getTime_end']=req.body.getTime_end;
-    output.info['bonus_status']=req.body.bonus_status;
-    output.info['m_id']=req.body.m_id;
+  output.id = result.insertId;
 
+  output.info = rs2[0];
+  output.info["getTime_start"] = req.body.getTime_start;
+  output.info["getTime_end"] = req.body.getTime_end;
+  output.info["bonus_status"] = req.body.bonus_status;
+  output.info["m_id"] = req.body.m_id;
 
-    return res.json(output);
-    // res.json('success')
-})
-app.post('/chatbot', async (req, res) => {
-    let output = {
-        success: false,
-        results:{respond:'抱歉，我聽不懂你在說什麼?\n您可以點選專人客服為您服務。'}
-    }
-    const message = req.body.request;
-    let sql = '';
-    console.log(message) //檢查用，正式時可刪除
-    if(message.indexOf('你好')!==-1 || message.indexOf('午安')!==-1 || message.indexOf('早安')!==-1 || message.indexOf('晚安')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%你好%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('地址')!==-1){
-        sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%地址%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('票價')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%票價%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('紅利')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%紅利%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('點數')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%點數%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('開放時間')!==-1 || message.indexOf('幾點開門')!==-1 || message.indexOf('營業')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    if(message.indexOf('住宿')!==-1 || message.indexOf('房型')!==-1){
-        sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%住宿資訊%'";
-        const [results] = await db.query(sql);
-        output.success = true;
-        output.results = results[0];
-    }
-    
-    
-    
-    res.json(output);
+  return res.json(output);
+  // res.json('success')
+});
+app.post("/chatbot", async (req, res) => {
+  let output = {
+    success: false,
+    results: {
+      respond: "抱歉，我聽不懂你在說什麼?\n您可以點選專人客服為您服務。",
+    },
+  };
+  const message = req.body.request;
+  let sql = "";
+  console.log(message); //檢查用，正式時可刪除
+  if (
+    message.indexOf("你好") !== -1 ||
+    message.indexOf("午安") !== -1 ||
+    message.indexOf("早安") !== -1 ||
+    message.indexOf("晚安") !== -1
+  ) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%你好%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (message.indexOf("地址") !== -1) {
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%地址%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (message.indexOf("票價") !== -1) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%票價%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (message.indexOf("紅利") !== -1) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%紅利%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (message.indexOf("點數") !== -1) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%點數%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (
+    message.indexOf("開放時間") !== -1 ||
+    message.indexOf("幾點開門") !== -1 ||
+    message.indexOf("營業") !== -1
+  ) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+  if (message.indexOf("住宿") !== -1 || message.indexOf("房型") !== -1) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%住宿資訊%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
+
+  res.json(output);
 });
 //遊戲
 app.get("/roomdetail", async (req, res) => {
@@ -416,13 +442,14 @@ app.get("/roomdetail", async (req, res) => {
   res.json(results);
 });
 //住宿
-app.get('/room-comments-list', async (req, res) => {
-    const sql = "SELECT roomplatform.sid , roomplatform.service_score , roomplatform.clean_score , roomplatform.comfort_score , roomplatform.facility_score , roomplatform.cpValue_score, roomplatform.comments , members.m_name , orders_details_live.start  , orders_details_live.end, roomdetail.room_name FROM roomplatform JOIN members on roomplatform.m_sid = members.m_sid JOIN orders_details_live on roomplatform.order_detail_live_sid = orders_details_live.sid JOIN roomdetail on orders_details_live.room_sid = roomdetail.sid";
+app.get("/room-comments-list", async (req, res) => {
+  const sql =
+    "SELECT roomplatform.sid , roomplatform.service_score , roomplatform.clean_score , roomplatform.comfort_score , roomplatform.facility_score , roomplatform.cpValue_score, roomplatform.comments , members.m_name , orders_details_live.start  , orders_details_live.end, roomdetail.room_name FROM roomplatform JOIN members on roomplatform.m_sid = members.m_sid JOIN orders_details_live on roomplatform.order_detail_live_sid = orders_details_live.sid JOIN roomdetail on orders_details_live.room_sid = roomdetail.sid";
 
   const [results, fields] = await db.query(sql);
 
-    res.json(results);
-})
+  res.json(results);
+});
 
 //熱門活動一覽
 app.get("/popularevents", async (req, res) => {
@@ -432,7 +459,6 @@ app.get("/popularevents", async (req, res) => {
 
   res.json(results);
 });
-
 
 //住宿
 app.get("/tour", async (req, res) => {
