@@ -26,12 +26,17 @@ const server = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, { cors: {} });
 let panda_total = 0;
+let bear_total = 0;
 io.on("connection", (socket) => {
-  socket.emit("connection", panda_total);
+  socket.emit("connection", panda_total,bear_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
   socket.on("join", (room, cb) => {
-    panda_total = panda_total + 1;
+    if(room==='熊貓的告解室'){
+      panda_total = panda_total + 1;
+    }else if(room==='大熊的告解室'){
+      bear_total = bear_total + 1;
+    }
     // console.log(panda_total)
     currentRoom = room;
     socket.join(room);
@@ -46,6 +51,11 @@ io.on("connection", (socket) => {
       panda_total = panda_total - 1;
     } else {
       panda_total = 0;
+    }
+    if (bear_total > 0) {
+      bear_total = bear_total - 1;
+    } else {
+      bear_total = 0;
     }
     console.log("user disconnected");
   });
