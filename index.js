@@ -169,8 +169,26 @@ app.post("/carts/order_search", async (req, res) => {
   const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid}`;
 
   const [results] = await db.query(order_search_sql);
+  let new_arr = [];
+  results.map((v,i)=>{
+    if(i==0){
+      new_arr.push(v)
+      // console.log(new_arr);
+    }else if(results[i].order_sid !== results[i-1].order_sid ){
+      new_arr.push(v)
+    }else if(results[i].order_sid === results[i-1].order_sid ){
+      
+      const current_index = new_arr.findIndex(el=>el.order_sid==results[i].order_sid)
+      // console.log(current_index)
+      let b= new_arr[current_index].product_name.split();
+      
+      b.push(results[i].product_name)
+      new_arr[current_index].product_name = b
+    }
+  })
+  // console.log(typeof new_arr[1].product_name)
   output.success = true;
-  return res.json(results);
+  return res.json(new_arr);
 });
 
 //活動
