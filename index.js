@@ -28,13 +28,13 @@ const io = new Server(server, { cors: {} });
 let panda_total = 0;
 let bear_total = 0;
 io.on("connection", (socket) => {
-  socket.emit("connection", panda_total,bear_total);
+  socket.emit("connection", panda_total, bear_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
   socket.on("join", (room, cb) => {
-    if(room==='熊貓的告解室'){
+    if (room === "熊貓的告解室") {
       panda_total = panda_total + 1;
-    }else if(room==='大熊的告解室'){
+    } else if (room === "大熊的告解室") {
       bear_total = bear_total + 1;
     }
     // console.log(panda_total)
@@ -138,9 +138,13 @@ app.post("/carts/order", async (req, res) => {
   const o_sql =
     "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`) VALUES (?,?,?,NOW())";
 
-  await db.query(o_sql, [data.m_sid, data.payment_sid, data.amount]);
+  const results = await db.query(o_sql, [
+    data.m_sid,
+    data.payment_sid,
+    data.amount,
+  ]);
 
-  const o_sid = results.insertId; //抓最新加入的訂單ID
+  const o_sid = results[0].insertId; //抓最新加入的訂單ID
   const od_sql = `INSERT INTO orders_details_products(order_sid, product_sid,product_name, product_price, product_quantity) VALUES (${o_sid}, ?, ?, ?, ?)`;
   data2.map((v, i) => {
     db.query(od_sql, [
@@ -154,6 +158,20 @@ app.post("/carts/order", async (req, res) => {
   return res.json(output.success);
 });
 
+//訂單查詢
+app.post("/carts/order_search", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_sid = req.body.m_sid;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid}`;
+
+  const [results] = await db.query(order_search_sql);
+  output.success = true;
+  return res.json(results);
+});
 
 //活動
 app.post("/activity", async (req, res) => {
