@@ -7,6 +7,7 @@ const session = require("express-session");
 const MysqlStore = require("express-mysql-session")(session);
 const multer = require("multer");
 const moment = require("moment-timezone");
+const nodemailer = require("nodemailer");
 // const upload = multer({ dest: 'tmp_uploads/' })
 const upload = require(__dirname + "/modules/upload-imgs");
 const fs = require("fs").promises;
@@ -135,6 +136,7 @@ app.post("/carts/order", async (req, res) => {
   };
   const data = req.body.order;
   const data2 = req.body.order_detail_product;
+  const data3 = req.body.receive_data;
   const o_sql =
     "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`,`status`) VALUES (?,?,?,NOW(),?)";
 
@@ -155,8 +157,28 @@ app.post("/carts/order", async (req, res) => {
       data2[i].quantity,
     ]);
   });
+
+  const receive_data_sql = `INSERT INTO receive_data(receive_sid, o_sid, name, phone, email, address, shipment, payment) VALUES (${o_sid},${o_sid},?,?,?,?,?,?)`;
+  const result_data = db.query(receive_data_sql, [
+    data3.name,
+    data3.phone,
+    data3.email,
+    data3.address,
+    data3.delivery,
+    data3.payment,
+  ]);
+
   output.success = true;
   return res.json(output.success);
+});
+
+//紅利搜尋
+app.post("/carts/bonus", async (req, res) => {
+  const m_id = req.body.m_sid;
+  const bonus_sql = `SELECT bp.number FROM bonus_list AS bl JOIN bonus_point AS bp on bl.point_id=bp.point_sid where bl.m_id=${m_id}`;
+  const [results] = await db.query(bonus_sql);
+  const temp = results[0].number;
+  res.json(temp);
 });
 
 //訂單查詢
@@ -171,18 +193,18 @@ app.post("/carts/order_search", async (req, res) => {
 
   const [results] = await db.query(order_search_sql);
   let new_arr = [];
-  results.map((v,i)=>{
-    if(i==0){
+  results.map((v, i) => {
+    if (i == 0) {
       new_arr.push(v)
       // console.log(new_arr);
-    }else if(results[i].order_sid !== results[i-1].order_sid ){
+    } else if (results[i].order_sid !== results[i - 1].order_sid) {
       new_arr.push(v)
-    }else if(results[i].order_sid === results[i-1].order_sid ){
-      
-      const current_index = new_arr.findIndex(el=>el.order_sid==results[i].order_sid)
+    } else if (results[i].order_sid === results[i - 1].order_sid) {
+
+      const current_index = new_arr.findIndex(el => el.order_sid == results[i].order_sid)
       // console.log(current_index)
-      let b= Array(new_arr[current_index].product_name);
-      
+      let b = Array(new_arr[current_index].product_name);
+
       b.push(results[i].product_name)
       new_arr[current_index].product_name = b
     }
@@ -192,6 +214,7 @@ app.post("/carts/order_search", async (req, res) => {
   return res.json(new_arr);
 });
 
+//入園票券查詢
 app.post("/carts/ticket_search", async (req, res) => {
   const output = {
     success: false,
@@ -214,25 +237,75 @@ app.post("/carts/ticket_search", async (req, res) => {
       // console.log(new_arr);
     } else if (results[i].order_sid !== results[i - 1].order_sid) {
       new_arr.push(v);
-      
+
     } else if (results[i].order_sid === results[i - 1].order_sid) {
       const current_index = new_arr.findIndex(
         (el) => el.order_sid == results[i].order_sid
       );
       // console.log(current_index)
       new_arr.push(v);
-      
+
       let b = Array(new_arr[current_index].product_name);
-      
+
       b.push(results[i].product_name);
       new_arr[current_index].product_name = b;
-      
+
     }
   });
   // console.log(typeof new_arr[1].product_name)
   output.success = true;
   return res.json(new_arr);
 });
+
+//收件人資料
+app.post("/carts/receive_data", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_id = req.body.m_sid;
+  const m_email = req.body.email;
+  const m_name =req.body.m_name;
+  const receive_data_sql = `SELECT o.order_sid,o.order_date,rd.name,rd.phone,rd.email,rd.address,rd.shipment,rd.payment 
+  FROM receive_data as rd 
+  JOIN orders as o 
+  ON o.order_sid=rd.o_sid 
+  where o.m_sid=${m_id}	
+  ORDER BY rd.receive_sid DESC
+  LIMIT 1`;
+  const [results] = await db.query(receive_data_sql);
+  const temp = "A" + results[0].order_date.slice(0, 10).split("-").join("") + results[0].order_sid
+  output.success=ture;
+
+  if (output.success) {
+    let testAccount = await nodemailer.createTestAccount();
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // true for 465, false for other ports
+      auth: {
+        user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+        pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+      },
+    });
+
+    // 讓用戶驗證
+    let info = await transporter.sendMail({
+      from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+      to: `${m_email}`, // 收件者(req.body.email)
+      subject: `WildJungle感謝您的訂購`, // 主旨
+      text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
+      html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
+    });
+
+    console.log("Message sent: %s", info.messageId);
+
+  }
+
+  res.json(temp);
+});
+
 
 //活動
 app.post("/activity", async (req, res) => {
