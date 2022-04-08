@@ -190,8 +190,7 @@ app.post("/carts/order", async (req, res) => {
   return res.json(output.success);
 });
 
-<<<<<<< HEAD
-=======
+
 //紅利搜尋
 app.post("/carts/bonus", async (req, res) => {
   const m_id = req.body.m_sid;
@@ -369,7 +368,6 @@ app.post("/carts/receive_data", async (req, res) => {
   res.json(temp);
 });
 
->>>>>>> 80a6975158851c6da2104a21b6f63605bd99b627
 //活動
 app.post("/activity", async (req, res) => {
   sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
