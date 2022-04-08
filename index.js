@@ -352,28 +352,27 @@ app.post("/carts/receive_data", async (req, res) => {
     results[0].order_date.slice(0, 10).split("-").join("") +
     "" +
     results[0].order_sid;
-  console.log(temp);
   output.success = true;
 
-  // let testAccount = await nodemailer.createTestAccount();
-  // let transporter = nodemailer.createTransport({
-  //   host: "smtp.gmail.com",
-  //   port: 465,
-  //   secure: true, // true for 465, false for other ports
-  //   auth: {
-  //     user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
-  //     pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
-  //   },
-  // });
+  let testAccount = await nodemailer.createTestAccount();
+  let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+      pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+    },
+  });
 
-  // // 讓用戶驗證
-  // let info = await transporter.sendMail({
-  //   from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
-  //   to: "wildjungle2022@gmail.com", // 收件者(req.body.email)
-  //   subject: `WildJungle感謝您的訂購`, // 主旨
-  //   text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
-  //   html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
-  // });
+  // 讓用戶驗證
+  let info = await transporter.sendMail({
+    from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+    to: "wildjungle2022@gmail.com", // 收件者(req.body.email)
+    subject: `WildJungle感謝您的訂購`, // 主旨
+    text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
+    html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
+  });
 
   res.json(temp);
 });
