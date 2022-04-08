@@ -137,6 +137,9 @@ app.post("/carts/order", async (req, res) => {
   const data = req.body.order;
   const data2 = req.body.order_detail_product;
   const data3 = req.body.receive_data;
+  const bonus_data = req.body.bonus;
+  const m_id = req.body.m_sid;
+  bonus_data.pop();
   const o_sql =
     "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`,`status`) VALUES (?,?,?,NOW(),?)";
 
@@ -168,6 +171,10 @@ app.post("/carts/order", async (req, res) => {
     data3.payment,
   ]);
 
+  bonus_data.map(async(v, i) => {
+    const bonus_sql = `UPDATE bonus_list AS bl SET bl.bonus_status = '已使用' WHERE bl.bonusList_sid = ${v.bonusList_sid} && bl.m_id=${m_id}`;
+    const results_bonus= await db.query(bonus_sql);
+  });
   output.success = true;
   return res.json(output.success);
 });
@@ -175,20 +182,19 @@ app.post("/carts/order", async (req, res) => {
 //紅利搜尋
 app.post("/carts/bonus", async (req, res) => {
   const m_id = req.body.m_sid;
-  // const bonus_sql = `SELECT bp.number FROM bonus_list AS bl JOIN bonus_point AS bp on bl.point_id=bp.point_sid  where bl.m_id=${m_id} && bl.bonus_status="未使用"`;
-  // const [results] = await db.query(bonus_sql);
-  // console.log(results)
-  // if (results.length) {
-  //   temp = results[0].number;
-  // } 
-  // res.json(results);
-  const bonus_sql = `SELECT bp.number FROM bonus_list AS bl JOIN bonus_point AS bp on bl.point_id=bp.point_sid where bl.m_id=${m_id}`;
+  const bonus_sql = `SELECT bonusList_sid,bp.number FROM bonus_list AS bl JOIN bonus_point AS bp on bl.point_id=bp.point_sid where bl.m_id=${m_id} && bl.bonus_status="未使用";`;
   const [results] = await db.query(bonus_sql);
-  const temp = results[0].number;
-  res.json(temp);
+  // console.log(results);
+  let temp = 0;
+
+  if (results.length) {
+    results.map((v, i) => {
+      temp += v.number;
+    });
+  }
+  results.push(temp);
+  res.json(results);
 });
-
-
 
 //訂單查詢
 app.post("/carts/order_search", async (req, res) => {
