@@ -28,13 +28,13 @@ const io = new Server(server, { cors: {} });
 let panda_total = 0;
 let bear_total = 0;
 io.on("connection", (socket) => {
-  socket.emit("connection", panda_total,bear_total);
+  socket.emit("connection", panda_total, bear_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
   socket.on("join", (room, cb) => {
-    if(room==='熊貓的告解室'){
+    if (room === "熊貓的告解室") {
       panda_total = panda_total + 1;
-    }else if(room==='大熊的告解室'){
+    } else if (room === "大熊的告解室") {
       bear_total = bear_total + 1;
     }
     // console.log(panda_total)
@@ -124,6 +124,17 @@ app.use("/roomplatform", require("./routes/roomplatform"));
 
 app.use("/members", require("./routes/members"));
 
+// 首頁
+
+app.get("/home-products", async (req, res) => {
+  const sql =
+    "SELECT `ProductsName`,`ProductsPrice`,`PicName` FROM `products` JOIN `productspic` on products.ProductsPic = productspic.ProductsPic";
+
+  const [results] = await db.query(sql);
+
+  res.json(results);
+});
+
 //會員
 
 //購物車
@@ -153,7 +164,6 @@ app.post("/carts/order", async (req, res) => {
   output.success = true;
   return res.json(output.success);
 });
-
 
 //活動
 app.post("/activity", async (req, res) => {
