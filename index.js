@@ -7,6 +7,7 @@ const session = require("express-session");
 const MysqlStore = require("express-mysql-session")(session);
 const multer = require("multer");
 const moment = require("moment-timezone");
+const nodemailer = require("nodemailer");
 // const upload = multer({ dest: 'tmp_uploads/' })
 const upload = require(__dirname + "/modules/upload-imgs");
 const fs = require("fs").promises;
@@ -146,12 +147,21 @@ app.post("/carts/order", async (req, res) => {
   };
   const data = req.body.order;
   const data2 = req.body.order_detail_product;
+  const data3 = req.body.receive_data;
+  const bonus_data = req.body.bonus;
+  const m_id = req.body.m_sid;
+  bonus_data.pop();
   const o_sql =
-    "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`) VALUES (?,?,?,NOW())";
+    "INSERT INTO `orders`(`m_sid`, `payment_sid`, `amount`, `order_date`,`status`) VALUES (?,?,?,NOW(),?)";
 
-  await db.query(o_sql, [data.m_sid, data.payment_sid, data.amount]);
+  const results = await db.query(o_sql, [
+    data.m_sid,
+    data.payment_sid,
+    data.amount,
+    data.status,
+  ]);
 
-  const o_sid = results.insertId; //抓最新加入的訂單ID
+  const o_sid = results[0].insertId; //抓最新加入的訂單ID
   const od_sql = `INSERT INTO orders_details_products(order_sid, product_sid,product_name, product_price, product_quantity) VALUES (${o_sid}, ?, ?, ?, ?)`;
   data2.map((v, i) => {
     db.query(od_sql, [
@@ -161,10 +171,205 @@ app.post("/carts/order", async (req, res) => {
       data2[i].quantity,
     ]);
   });
+
+  const receive_data_sql = `INSERT INTO receive_data(receive_sid, o_sid, name, phone, email, address, shipment, payment) VALUES (${o_sid},${o_sid},?,?,?,?,?,?)`;
+  const result_data = db.query(receive_data_sql, [
+    data3.name,
+    data3.phone,
+    data3.email,
+    data3.address,
+    data3.delivery,
+    data3.payment,
+  ]);
+
+  bonus_data.map(async(v, i) => {
+    const bonus_sql = `UPDATE bonus_list AS bl SET bl.bonus_status = '已使用' WHERE bl.bonusList_sid = ${v.bonusList_sid} && bl.m_id=${m_id}`;
+    const results_bonus= await db.query(bonus_sql);
+  });
   output.success = true;
   return res.json(output.success);
 });
 
+<<<<<<< HEAD
+=======
+//紅利搜尋
+app.post("/carts/bonus", async (req, res) => {
+  const m_id = req.body.m_sid;
+  const bonus_sql = `SELECT bonusList_sid,bp.number FROM bonus_list AS bl JOIN bonus_point AS bp on bl.point_id=bp.point_sid where bl.m_id=${m_id} && bl.bonus_status="未使用";`;
+  const [results] = await db.query(bonus_sql);
+  // console.log(results);
+  let temp = 0;
+
+  if (results.length) {
+    results.map((v, i) => {
+      temp += v.number;
+    });
+  }
+  results.push(temp);
+  res.json(results);
+});
+
+//訂單查詢
+app.post("/carts/order_search", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_sid = req.body.m_sid;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid}`;
+
+  const [results] = await db.query(order_search_sql);
+  let new_arr = [];
+  results.map((v,i)=>{
+    if(i==0){
+      new_arr.push(v)
+      // console.log(new_arr);
+    }else if(results[i].order_sid !== results[i-1].order_sid ){
+      new_arr.push(v)
+    }else if(results[i].order_sid === results[i-1].order_sid ){
+      let update = {order_sid:'',product_name:'',product_price:'',product_quantity:'',order_date:'',amount:'',status:''};
+      update.order_sid = 'none';
+      update.product_name = results[i].product_name;
+      update.product_price = results[i].product_price;
+      update.product_quantity = results[i].product_quantity;
+      update.order_date = 'none';
+      update.amount = 'none';
+      update.status = 'none';
+      new_arr.push(update); 
+    }
+  })
+  // console.log(typeof new_arr[1].product_name)
+  output.success = true;
+  return res.json(new_arr);
+});
+app.post("/carts/order_search2", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_sid = req.body.m_sid;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid}`;
+
+  const [results] = await db.query(order_search_sql);
+  let new_arr = [];
+  let count = 0;
+  results.map((v, i) => {
+    if (i == 0) {
+      new_arr.push(v)
+      // console.log(new_arr);
+    } else if (results[i].order_sid !== results[i - 1].order_sid) {
+      new_arr.push(v)
+      count = 0;
+    } else if (results[i].order_sid === results[i - 1].order_sid) {
+      const current_index = new_arr.findIndex(el => el.order_sid == results[i].order_sid)
+      // console.log(current_index)
+      if(count===0){
+        let b = Array(new_arr[current_index].product_name);
+        b.push(results[i].product_name)
+        new_arr[current_index].product_name = b
+        count++;
+      }else{
+        (new_arr[current_index].product_name).push(results[i].product_name);
+      }
+    }
+  })
+  // console.log(typeof new_arr[1].product_name)
+  output.success = true;
+  return res.json(new_arr);
+});
+
+
+//入園票券查詢
+app.post("/carts/ticket_search", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_sid = req.body.m_sid;
+  const ticket_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o 
+  JOIN orders_details_products as odp 
+  ON o.order_sid=odp.order_sid 
+  JOIN ticket AS tic 
+  ON odp.product_sid=tic.ticket_sid
+  WHERE m_sid=${m_sid}`;
+
+  const [results] = await db.query(ticket_search_sql);
+  let new_arr = [];
+  results.map((v, i) => {
+    if (i == 0) {
+      new_arr.push(v);
+      // console.log(new_arr);
+    } else if (results[i].order_sid !== results[i - 1].order_sid) {
+      new_arr.push(v);
+    } else if (results[i].order_sid === results[i - 1].order_sid) {
+      const current_index = new_arr.findIndex(
+        (el) => el.order_sid == results[i].order_sid
+      );
+      // console.log(current_index)
+      new_arr.push(v);
+
+      let b = Array(new_arr[current_index].product_name);
+
+      b.push(results[i].product_name);
+      new_arr[current_index].product_name = b;
+    }
+  });
+  // console.log(typeof new_arr[1].product_name)
+  output.success = true;
+  return res.json(new_arr);
+});
+
+//收件人資料
+app.post("/carts/receive_data", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_id = req.body.m_sid;
+  const m_email = req.body.email;
+  const m_name = req.body.m_name;
+  const receive_data_sql = `SELECT o.order_sid,o.order_date,rd.name,rd.phone,rd.email,rd.address,rd.shipment,rd.payment 
+  FROM receive_data as rd 
+  JOIN orders as o 
+  ON o.order_sid=rd.o_sid 
+  where o.m_sid=${m_id}	
+  ORDER BY rd.receive_sid DESC
+  LIMIT 1`;
+  const [results] = await db.query(receive_data_sql);
+  const temp =
+    "A" +
+    results[0].order_date.slice(0, 10).split("-").join("") +
+    results[0].order_sid;
+  output.success = true;
+
+  let testAccount = await nodemailer.createTestAccount();
+  let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+      pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+    },
+  });
+
+  // 讓用戶驗證
+  let info = await transporter.sendMail({
+    from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+    to: "wildjungle2022@gmail.com", // 收件者(req.body.email)
+    subject: `WildJungle感謝您的訂購`, // 主旨
+    text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
+    html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
+  });
+
+  res.json(temp);
+});
+
+>>>>>>> 80a6975158851c6da2104a21b6f63605bd99b627
 //活動
 app.post("/activity", async (req, res) => {
   sql = `SELECT seat FROM animal_seats WHERE time= '${req.body.sid}' `;
