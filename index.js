@@ -182,14 +182,13 @@ app.post("/carts/order", async (req, res) => {
     data3.payment,
   ]);
 
-  bonus_data.map(async(v, i) => {
+  bonus_data.map(async (v, i) => {
     const bonus_sql = `UPDATE bonus_list AS bl SET bl.bonus_status = '已使用' WHERE bl.bonusList_sid = ${v.bonusList_sid} && bl.m_id=${m_id}`;
-    const results_bonus= await db.query(bonus_sql);
+    const results_bonus = await db.query(bonus_sql);
   });
   output.success = true;
   return res.json(output.success);
 });
-
 
 //紅利搜尋
 app.post("/carts/bonus", async (req, res) => {
@@ -220,24 +219,32 @@ app.post("/carts/order_search", async (req, res) => {
 
   const [results] = await db.query(order_search_sql);
   let new_arr = [];
-  results.map((v,i)=>{
-    if(i==0){
-      new_arr.push(v)
+  results.map((v, i) => {
+    if (i == 0) {
+      new_arr.push(v);
       // console.log(new_arr);
-    }else if(results[i].order_sid !== results[i-1].order_sid ){
-      new_arr.push(v)
-    }else if(results[i].order_sid === results[i-1].order_sid ){
-      let update = {order_sid:'',product_name:'',product_price:'',product_quantity:'',order_date:'',amount:'',status:''};
-      update.order_sid = 'none';
+    } else if (results[i].order_sid !== results[i - 1].order_sid) {
+      new_arr.push(v);
+    } else if (results[i].order_sid === results[i - 1].order_sid) {
+      let update = {
+        order_sid: "",
+        product_name: "",
+        product_price: "",
+        product_quantity: "",
+        order_date: "",
+        amount: "",
+        status: "",
+      };
+      update.order_sid = "none";
       update.product_name = results[i].product_name;
       update.product_price = results[i].product_price;
       update.product_quantity = results[i].product_quantity;
-      update.order_date = 'none';
-      update.amount = 'none';
-      update.status = 'none';
-      new_arr.push(update); 
+      update.order_date = "none";
+      update.amount = "none";
+      update.status = "none";
+      new_arr.push(update);
     }
-  })
+  });
   // console.log(typeof new_arr[1].product_name)
   output.success = true;
   return res.json(new_arr);
@@ -256,29 +263,30 @@ app.post("/carts/order_search2", async (req, res) => {
   let count = 0;
   results.map((v, i) => {
     if (i == 0) {
-      new_arr.push(v)
+      new_arr.push(v);
       // console.log(new_arr);
     } else if (results[i].order_sid !== results[i - 1].order_sid) {
-      new_arr.push(v)
+      new_arr.push(v);
       count = 0;
     } else if (results[i].order_sid === results[i - 1].order_sid) {
-      const current_index = new_arr.findIndex(el => el.order_sid == results[i].order_sid)
+      const current_index = new_arr.findIndex(
+        (el) => el.order_sid == results[i].order_sid
+      );
       // console.log(current_index)
-      if(count===0){
+      if (count === 0) {
         let b = Array(new_arr[current_index].product_name);
-        b.push(results[i].product_name)
-        new_arr[current_index].product_name = b
+        b.push(results[i].product_name);
+        new_arr[current_index].product_name = b;
         count++;
-      }else{
-        (new_arr[current_index].product_name).push(results[i].product_name);
+      } else {
+        new_arr[current_index].product_name.push(results[i].product_name);
       }
     }
-  })
+  });
   // console.log(typeof new_arr[1].product_name)
   output.success = true;
   return res.json(new_arr);
 });
-
 
 //入園票券查詢
 app.post("/carts/ticket_search", async (req, res) => {
@@ -342,28 +350,30 @@ app.post("/carts/receive_data", async (req, res) => {
   const temp =
     "A" +
     results[0].order_date.slice(0, 10).split("-").join("") +
+    "" +
     results[0].order_sid;
+  console.log(temp);
   output.success = true;
 
-  let testAccount = await nodemailer.createTestAccount();
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
-      pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
-    },
-  });
+  // let testAccount = await nodemailer.createTestAccount();
+  // let transporter = nodemailer.createTransport({
+  //   host: "smtp.gmail.com",
+  //   port: 465,
+  //   secure: true, // true for 465, false for other ports
+  //   auth: {
+  //     user: process.env.TYSU_SENDEMAIL, // Gmail 帳號
+  //     pass: process.env.TYSU_SENDEMAIL_PASS, // Gmail 的應用程式的密碼
+  //   },
+  // });
 
-  // 讓用戶驗證
-  let info = await transporter.sendMail({
-    from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
-    to: "wildjungle2022@gmail.com", // 收件者(req.body.email)
-    subject: `WildJungle感謝您的訂購`, // 主旨
-    text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
-    html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
-  });
+  // // 讓用戶驗證
+  // let info = await transporter.sendMail({
+  //   from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
+  //   to: "wildjungle2022@gmail.com", // 收件者(req.body.email)
+  //   subject: `WildJungle感謝您的訂購`, // 主旨
+  //   text: `Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨`, // 預計會顯示的文字
+  //   html: `<h3>Dear ${m_name} 貴賓，非常感謝您訂購WildJungle的商品，我們會盡快為您出貨</h3>`, // html body 實際顯示出來的結果
+  // });
 
   res.json(temp);
 });
