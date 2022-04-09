@@ -29,6 +29,8 @@ const io = new Server(server, { cors: {} });
 let panda_total = 0;
 let bear_total = 0;
 io.on("connection", (socket) => {
+  console.log('第一間人數',panda_total)
+  console.log('第二間人數',bear_total)
   socket.emit("connection", panda_total, bear_total);
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
@@ -48,15 +50,18 @@ io.on("connection", (socket) => {
   });
   // 以下程式碼拿來呈現離線用
   socket.on("disconnect", () => {
-    if (panda_total > 0) {
-      panda_total = panda_total - 1;
-    } else {
-      panda_total = 0;
-    }
-    if (bear_total > 0) {
-      bear_total = bear_total - 1;
-    } else {
-      bear_total = 0;
+    if(currentRoom==='北極熊的告解室'){
+      if (panda_total > 0) {
+        panda_total = panda_total - 1;
+      } else {
+        panda_total = 0;
+      }
+    }else if(currentRoom==='大熊的告解室'){
+      if (bear_total > 0) {
+        bear_total = bear_total - 1;
+      } else {
+        bear_total = 0;
+      }
     }
     console.log("user disconnected");
   });
