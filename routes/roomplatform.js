@@ -87,8 +87,8 @@ router.post("/room-comments-post", async (req, res) => {
       req.body.cpValue,
       req.body.commentTextarea,
       req.body.m_sid,
-      1,
-      1,
+      req.body.order_sid,
+      req.body.order_detail_live_sid,
     ]);
 
     if (!!result.length) {
@@ -106,5 +106,9 @@ router.post("/room-comments-post", async (req, res) => {
   }
   // return res.json(output);
 });
+
+
+//刪除
+
 
 module.exports = router;
