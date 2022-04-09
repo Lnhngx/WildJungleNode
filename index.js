@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
   console.log(`id ${socket.id} is connected`);
   let currentRoom = "";
   socket.on("join", (room, cb) => {
-    if (room === "熊貓的告解室") {
+    if (room === "北極熊的告解室") {
       panda_total = panda_total + 1;
     } else if (room === "大熊的告解室") {
       bear_total = bear_total + 1;
