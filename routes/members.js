@@ -463,7 +463,7 @@ router.post('/signup', upload.none(),async (req, res)=>{
             // 讓用戶驗證
             let info = await transporter.sendMail({
                 from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
-                to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
+                to: req.body.email, // 收件者(req.body.email)
                 subject: "Welcome! 歡迎您加入 Wild Jungle", // 主旨
                 text: `Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，前往驗證並登入`, // 預計會顯示的文字
                 html: `<h3>Hello ${req.body.name}! 歡迎您加入Wild Jungle會員，<a href="http://localhost:3000/members/confirm?id=${newCode}">前往驗證</a>並登入</h3>`, // html body 實際顯示出來的結果
