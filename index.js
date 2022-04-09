@@ -215,7 +215,7 @@ app.post("/carts/order_search", async (req, res) => {
     info: "",
   };
   const m_sid = req.body.m_sid;
-  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid}`;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid} ORDER BY o.order_sid , o.order_date`;
 
   const [results] = await db.query(order_search_sql);
   let new_arr = [];
@@ -301,7 +301,8 @@ app.post("/carts/ticket_search", async (req, res) => {
   ON o.order_sid=odp.order_sid 
   JOIN ticket AS tic 
   ON odp.product_sid=tic.ticket_sid
-  WHERE m_sid=${m_sid}`;
+  WHERE m_sid=${m_sid}
+  ORDER BY o.order_sid , o.order_date`;
 
   const [results] = await db.query(ticket_search_sql);
   let new_arr = [];
@@ -332,6 +333,47 @@ app.post("/carts/ticket_search", async (req, res) => {
   output.success = true;
   return res.json(new_arr);
 });
+
+//住宿查詢
+app.post("/carts/live_search", async (req, res) => {
+  const output = {
+    success: false,
+    error: "",
+    info: "",
+  };
+  const m_sid = req.body.m_sid;
+  const live_search_sql = `SELECT o.order_sid,r.room_name,r.price,odl.room_count,o.order_date,odl.start,odl.end,(odl.room_count*r.price) AS amount,odl.status FROM orders AS o JOIN orders_details_live AS odl ON o.order_sid=odl.orders_sid JOIN roomdetail AS r ON odl.room_sid=r.sid WHERE m_sid=${m_sid} ORDER BY o.order_sid , o.order_date;`
+
+  const [results] = await db.query(live_search_sql);
+  let new_arr = [];
+  let count = 0;
+  results.map((v, i) => {
+    if (i == 0) {
+      new_arr.push(v);
+      // console.log(new_arr);
+    } else if (results[i].order_sid !== results[i - 1].order_sid) {
+      new_arr.push(v);
+      count = 0;
+    } else if (results[i].order_sid === results[i - 1].order_sid) {
+      const current_index = new_arr.findIndex(
+        (el) => el.order_sid == results[i].order_sid
+      );
+      // console.log(current_index)
+      if (count === 0) {
+        let b = Array(new_arr[current_index].product_name);
+        b.push(results[i].product_name);
+        new_arr[current_index].product_name = b;
+        count++;
+      } else {
+        new_arr[current_index].product_name.push(results[i].product_name);
+      }
+    }
+  });
+  // console.log(typeof new_arr[1].product_name)
+  output.success = true;
+  return res.json(new_arr);
+});
+
 
 //收件人資料
 app.post("/carts/receive_data", async (req, res) => {
