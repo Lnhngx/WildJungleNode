@@ -640,6 +640,12 @@ app.post("/chatbot", async (req, res) => {
     output.success = true;
     output.results = results[0];
   }
+  if (message.indexOf("志工") !== -1) {
+    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%志工%'";
+    const [results] = await db.query(sql);
+    output.success = true;
+    output.results = results[0];
+  }
   if (message.indexOf("園區") !== -1) {
     sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%園區%'";
     const [results] = await db.query(sql);
