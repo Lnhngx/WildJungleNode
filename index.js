@@ -422,57 +422,146 @@ app.post("/carts/receive_data", async (req, res) => {
 });
 
 //登出後寫進資料庫
-app.post("/carts/inserttodb", async (req, res) => {
-  const output = {
-    success: false,
-    error: "",
-    info: "",
-  };
-  const m_sid = req.body.m_sid;
-  const temp1 = req.body.cart_temp1;
-  const temp2 = req.body.cart_temp2;
-  const temp3 = req.body.cart_temp3;
-  const temp4 = req.body.cart_temp4;
+// app.post("/carts/inserttodb", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//     info: "",
+//   };
+//   const m_sid = req.body.m_sid;
+//   let temp1 = req.body.cart_temp1;
+//   let temp2 = req.body.cart_temp2;
+//   let temp3 = req.body.cart_temp3;
+//   let temp4 = req.body.cart_temp4;
 
-  const intodb1 = `INSERT INTO cart_temp1(m_sid, sid, image, name, price, quantity) VALUES (${m_sid},?,?,?,?,?)`;
+//   if (temp1.length == 0) {
+//     temp1 = 0;
+//   } else {
+//     const intodb1 = `INSERT INTO cart_temp1(m_sid, sid, image, name, price, quantity) VALUES (${m_sid},?,?,?,?,?)`;
+//     temp1.map(async (v, i) => {
+//       await db.query(intodb1, [v.sid, v.image, v.name, v.price, v.quantity]);
+//     });
+//   }
 
-  temp1.map(async (v, i) => {
-    await db.query(intodb1, [v.sid, v.image, v.name, v.price, v.quantity]);
-  });
+//   if (temp2.length == 0) {
+//     temp2 = 0;
+//     // const intodb2 = `INSERT INTO cart_temp2(m_sid, sid, image, name, price, quantity,seats) VALUES (${m_sid},?,?,?,?,?,?)`;
+//     // temp2.map(async (v, i) => {
+//     //   await db.query(intodb2, [
+//     //     v.sid,
+//     //     v.image,
+//     //     v.name,
+//     //     v.price,
+//     //     v.quantity,
+//     //     v.seats,
+//     //   ]);
+//     // });
+//   }
 
-  // const intodb2 = `INSERT INTO cart_temp2(m_sid, sid, image, name, price, quantity,seats) VALUES (${m_sid},?,?,?,?,?,?)`;
-  // temp2.map(async (v, i) => {
-  //   await db.query(intodb2, [
-  //     v.sid,
-  //     v.image,
-  //     v.name,
-  //     v.price,
-  //     v.quantity,
-  //     v.seats,
-  //   ]);
-  // });
+//   if (temp3.length == 0) {
+//     temp3 = 0;
+//   } else {
+//     const intodb3 = `INSERT INTO cart_temp3(m_sid, sid, image, name, price, quantity) VALUES (${m_sid},?,?,?,?,?)`;
+//     temp3.map(async (v, i) => {
+//       await db.query(intodb3, [v.sid, v.image, v.name, v.price, v.quantity]);
+//     });
+//   }
 
-  const intodb3 = `INSERT INTO cart_temp3(m_sid, sid, image, name, price, quantity) VALUES (${m_sid},?,?,?,?,?)`;
-  temp3.map(async (v, i) => {
-    await db.query(intodb3, [v.sid, v.image, v.name, v.price, v.quantity]);
-  });
+//   if (temp1.length == 0) {
+//     temp4 = 0;
+//   } else {
+//     const intodb4 = `INSERT INTO cart_temp4(m_sid, sid, image, name, price, quantity,start,end) VALUES (${m_sid},?,?,?,?,?,?,?)`;
+//     temp4.map(async (v, i) => {
+//       await db.query(intodb4, [
+//         v.sid,
+//         v.image,
+//         v.name,
+//         v.price,
+//         v.quantity,
+//         v.start,
+//         v.end,
+//       ]);
+//     });
+//   }
+//   output.success = true;
+//   return res.json(output.success);
+// });
 
-  const intodb4 = `INSERT INTO cart_temp4(m_sid, sid, image, name, price, quantity,start,end) VALUES (${m_sid},?,?,?,?,?,?,?)`;
-  temp4.map(async (v, i) => {
-    await db.query(intodb4, [
-      v.sid,
-      v.image,
-      v.name,
-      v.price,
-      v.quantity,
-      v.start,
-      v.end,
-    ]);
-  });
+//登入後移出資料庫_1
+// app.post("/carts/removetodb_1", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//     info: "",
+//   };
+//   const m_sid = req.body.m_sid;
 
-  output.success = true;
-  return res.json(output.success);
-});
+//   const finddb = `SELECT m_sid,sid,image,name,price,quantity FROM cart_temp1 WHERE m_sid=${m_sid};`;
+//   const [results] = await db.query(finddb);
+//   const removedb = `DELETE FROM cart_temp1 WHERE m_sid=${m_sid}`;
+//   const results_del = await db.query(removedb);
+
+//   output.success = true;
+//   return res.json(results);
+// });
+
+// //登入後移出資料庫_2
+// app.post("/carts/removetodb_2", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//     info: "",
+//   };
+//   const m_sid = req.body.m_sid;
+
+//   const finddb = `SELECT * FROM cart_temp2 WHERE m_sid=${m_sid};`;
+//   const results = await db.query(finddb);
+//   const removedb =`DELETE FROM cart_temp2 WHERE m_sid=${m_sid}`
+//   const results_del= await db.query(removedb);
+
+//   output.success = true;
+//   return res.json(results);
+// });
+
+//登入後移出資料庫_3
+// app.post("/carts/removetodb_3", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//     info: "",
+//   };
+//   const m_sid = req.body.m_sid;
+
+//   const finddb = `SELECT * FROM cart_temp3 WHERE m_sid=${m_sid};`;
+//   const results = await db.query(finddb);
+//   const removedb =`DELETE FROM cart_temp3 WHERE m_sid=${m_sid}`
+//   const results_del= await db.query(removedb);
+
+//   if(results==undefined){
+//     results=0;
+//   }
+
+//   output.success = true;
+//   return res.json(results);
+// });
+
+// //登入後移出資料庫_4
+// app.post("/carts/removetodb_4", async (req, res) => {
+//   const output = {
+//     success: false,
+//     error: "",
+//     info: "",
+//   };
+//   const m_sid = req.body.m_sid;
+
+//   const finddb = `SELECT * FROM cart_temp4 WHERE m_sid=${m_sid};`;
+//   const results = await db.query(finddb);
+//   const removedb =`DELETE FROM cart_temp4 WHERE m_sid=${m_sid}`
+//   const results_del= await db.query(removedb);
+
+// output.success = true;
+// return res.json(results);
+// });
 
 //活動
 app.post("/activity", async (req, res) => {
