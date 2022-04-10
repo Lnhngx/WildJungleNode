@@ -857,7 +857,7 @@ router.post('/forgotpass', async (req, res)=>{
             // 讓用戶驗證
             let info = await transporter.sendMail({
                 from: '"Wild Jungle" <wildjungle2022@gmail.com>', // 發送者
-                to: 'wildjungle2022@gmail.com', // 收件者(req.body.email)
+                to: req.body.email, // 收件者(req.body.email)
                 subject: "Wild Jungle 通知:請儘速變更您的密碼", // 主旨
                 text: `您剛才操作忘記密碼步驟，收到驗證信請儘速變更您的密碼`, // 預計會顯示的文字
                 html: `<h3>您剛才操作忘記密碼步驟，收到驗證信請儘速變更您的密碼</h3><h4><a href="http://localhost:3000/members/password-change?auth=${newCode}">前往驗證</a>並登入</h4>`, // html body 實際顯示出來的結果
