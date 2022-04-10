@@ -109,6 +109,26 @@ router.post("/room-comments-post", async (req, res) => {
 
 
 //刪除
+router.get('/room-comments/delete/:sid', async (req, res)=>{
+  console.log(req.params.sid)
+  const output={
+      success:false,
+      error:''
+  }
+
+  const sql=`DELETE FROM roomplatform WHERE sid=${req.params.sid}`;
+  const [rs]=await db.query(sql);
+  if(rs.affectedRows===0){
+      output.error='沒有此筆資料'
+      return res.json(output)
+  }else{
+      output.success=true;
+      output.error='刪除成功'
+      return res.json(output)
+  }
+  return res.json(output)
+});
+
 
 
 module.exports = router;
