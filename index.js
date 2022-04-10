@@ -220,7 +220,7 @@ app.post("/carts/order_search", async (req, res) => {
     info: "",
   };
   const m_sid = req.body.m_sid;
-  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid} ORDER BY o.order_sid , o.order_date`;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid} ORDER BY o.order_sid DESC ,odp.product_sid ASC`;
 
   const [results] = await db.query(order_search_sql);
   let new_arr = [];
@@ -261,7 +261,7 @@ app.post("/carts/order_search2", async (req, res) => {
     info: "",
   };
   const m_sid = req.body.m_sid;
-  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid} ORDER BY o.order_sid , o.order_date`;
+  const order_search_sql = `SELECT o.order_sid,odp.product_name,odp.product_price,odp.product_quantity,o.order_date,o.amount,o.status FROM orders as o JOIN orders_details_products as odp on o.order_sid=odp.order_sid WHERE m_sid=${m_sid} ORDER BY o.order_sid DESC ,odp.product_sid ASC`;
 
   const [results] = await db.query(order_search_sql);
   let new_arr = [];
@@ -307,7 +307,7 @@ app.post("/carts/ticket_search", async (req, res) => {
   JOIN ticket AS tic 
   ON odp.product_sid=tic.ticket_sid
   WHERE m_sid=${m_sid}
-  ORDER BY o.order_sid , o.order_date`;
+  ORDER BY o.order_sid DESC, odp.product_sid ASC`;
 
   const [results] = await db.query(ticket_search_sql);
   let new_arr = [];
@@ -347,7 +347,7 @@ app.post("/carts/live_search", async (req, res) => {
     info: "",
   };
   const m_sid = req.body.m_sid;
-  const live_search_sql = `SELECT o.order_sid,r.room_name,r.price,odl.room_count,o.order_date,odl.start,odl.end,(odl.room_count*r.price) AS amount,odl.status FROM orders AS o JOIN orders_details_live AS odl ON o.order_sid=odl.orders_sid JOIN roomdetail AS r ON odl.room_sid=r.sid WHERE m_sid=${m_sid} ORDER BY o.order_sid , o.order_date;`;
+  const live_search_sql = `SELECT o.order_sid,r.room_name,r.price,odl.room_count,o.order_date,odl.start,odl.end,(odl.room_count*r.price) AS amount,odl.status FROM orders AS o JOIN orders_details_live AS odl ON o.order_sid=odl.orders_sid JOIN roomdetail AS r ON odl.room_sid=r.sid WHERE m_sid=${m_sid} ORDER BY o.order_sid DESC , odl.room_sid ASC`;
 
   const [results] = await db.query(live_search_sql);
   let new_arr = [];
