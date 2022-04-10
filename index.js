@@ -804,6 +804,7 @@ app.post("/chatbot", async (req, res) => {
   console.log(message); //檢查用，正式時可刪除
   if (
     message.indexOf("你好") !== -1 ||
+    message.indexOf("妳好") !== -1 ||
     message.indexOf("午安") !== -1 ||
     message.indexOf("早安") !== -1 ||
     message.indexOf("晚安") !== -1
