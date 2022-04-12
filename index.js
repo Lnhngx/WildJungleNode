@@ -388,13 +388,7 @@ app.post("/carts/receive_data", async (req, res) => {
   };
   const m_id = req.body.m_sid;
   const m_name = req.body.m_name;
-  const receive_data_sql = `SELECT o.order_sid,o.order_date,rd.name,rd.phone,rd.email,rd.address,rd.shipment,rd.payment 
-  FROM receive_data as rd 
-  JOIN orders as o 
-  ON o.order_sid=rd.o_sid 
-  where o.m_sid=${m_id}	
-  ORDER BY rd.receive_sid DESC
-  LIMIT 1`;
+  const receive_data_sql = `SELECT order_sid,order_date FROM orders WHERE m_sid=${m_id} ORDER BY order_date DESC LIMIT 1`;
   const [results] = await db.query(receive_data_sql);
   const temp =
     "A" +
