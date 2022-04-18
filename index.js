@@ -653,7 +653,9 @@ app.get("/game", async (req, res) => {
     answer8: { list: [] },
     answer9: { list: [] },
   };
+  // rs2的陣列長度是40（10題題目搭配40個選項）,所以i無法拿來用
   rs2.map((v, i) => {
+    // 塞入正確答案與對應的題號
     if (v.question_sid === q_ids[0] && v.yesno === "right") {
       new_arr.answer0.yes = v.acontent;
       new_arr.answer0.question_sid = v.question_sid;
@@ -685,6 +687,7 @@ app.get("/game", async (req, res) => {
       new_arr.answer9.yes = v.acontent;
       new_arr.answer9.question_sid = v.question_sid;
     }
+    // 在list中放入所有選項
     if (v.question_sid === q_ids[0]) {
       new_arr.answer0.list.push(v.acontent);
     } else if (v.question_sid === q_ids[1]) {
