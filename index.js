@@ -803,7 +803,7 @@ app.post("/chatbot", async (req, res) => {
     message.indexOf("早安") !== -1 ||
     message.indexOf("晚安") !== -1
   ) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%你好%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%你好%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
@@ -815,31 +815,31 @@ app.post("/chatbot", async (req, res) => {
     output.results = results[0];
   }
   if (message.indexOf("票價") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%票價%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%票價%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
   }
   if (message.indexOf("紅利") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%紅利%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%紅利%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
   }
   if (message.indexOf("志工") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%志工%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%志工%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
   }
   if (message.indexOf("園區") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%園區%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%園區%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
   }
   if (message.indexOf("點數") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%點數%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%點數%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
@@ -849,13 +849,13 @@ app.post("/chatbot", async (req, res) => {
     message.indexOf("幾點開門") !== -1 ||
     message.indexOf("營業") !== -1
   ) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%開放時間%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
   }
   if (message.indexOf("住宿") !== -1 || message.indexOf("房型") !== -1) {
-    sql = "SELECT * FROM `chatbot` WHERE `request` LIKE '%住宿資訊%'";
+    sql = "SELECT `respond` FROM `chatbot` WHERE `request` LIKE '%住宿資訊%'";
     const [results] = await db.query(sql);
     output.success = true;
     output.results = results[0];
