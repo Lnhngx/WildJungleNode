@@ -634,12 +634,12 @@ app.get("/productstype", async (req, res) => {
 app.get("/game", async (req, res) => {
   const sql1 = "SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10";
   const [rs1] = await db.query(sql1);
-
+  //rs1 會得到陣列包著隨機十筆物件（題目）
   const q_ids = rs1.map((r) => r.sid);
-
+  // q_ids紀錄抓出來的題目編號,接著用WHERE IN 抓 answer 的資料
   const sql2 = `SELECT * FROM  \`answer\` WHERE question_sid IN (${q_ids.join(
     ","
-  )}) `; // question_sid
+  )}) `; 
   const [rs2] = await db.query(sql2);
   let new_arr = {
     answer0: { list: [] },
@@ -708,8 +708,6 @@ app.get("/game", async (req, res) => {
     }
   });
   // console.log(new_arr);
-
-  for (let i = 0; i < 10; i++) {
     for (let j = 0; j < 10; j++) {
       if (new_arr.answer0.question_sid === rs1[j].sid) {
         rs1[j].answers = new_arr.answer0.list;
@@ -752,7 +750,7 @@ app.get("/game", async (req, res) => {
         rs1[j].yes = new_arr.answer9.yes;
       }
     }
-  }
+  // 整理好傳前端的rs1會同時保有原本question資料表的key再加上所有選項與正確答案
   res.json(rs1);
   // const sql2 = "SELECT q.`sid`,`name`,`qcontent`,`acontent`,`yesno` FROM (SELECT q.* FROM `question` q ORDER BY rand() LIMIT 10)q JOIN `answer` WHERE `question_sid` = q.`sid` LIMIT 40;";
   // const [results] = await db.query(sql);
